@@ -1,0 +1,26 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd"
+>
+    <changeSet id="create_enum_type_organization_type" author="nazar">
+        <sql>
+            create type organization_type as enum('SMALL', 'MIDDLE', 'LARGE')
+        </sql>
+    </changeSet>
+
+    <changeSet id="create-organization-table" author="nazarii" >
+        <createTable tableName="organization">
+            <column defaultValueComputed="uuid_generate_v4()" name="o_id" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_organization"/>
+            </column>
+            <column name="o_name" type="varchar(40)"/>
+            <column name="o_active_end_date" type="timestamp"/>
+            <column name="o_creation_date" type="timestamp"/>
+            <column name="o_organization_type" type="organization_type"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>
