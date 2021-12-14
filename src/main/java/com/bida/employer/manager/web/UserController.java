@@ -34,12 +34,17 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody UserLoginDTO userDTO, HttpServletResponse response) {
+    public ResponseEntity<TokenDTOResponse> login(@RequestBody UserLoginDTO userDTO, HttpServletResponse response) {
         return new ResponseEntity<>(userService.login(userDTO, response), HttpStatus.OK);
     }
 
     @GetMapping("/refresh_token")
-    public ResponseEntity<?> refreshToken(@CookieValue(name = "refreshToken") String token) {
+    public ResponseEntity<TokenDTOResponse> refreshToken(@CookieValue(name = "refreshToken") String token) {
         return new ResponseEntity<>(userService.generateAccessToken(token), HttpStatus.OK);
+    }
+
+    @PostMapping("/change_password")
+    public ResponseEntity<UserDTOResponse> changePassword(@RequestBody ChangePasswordDTO changePassword) {
+        return new ResponseEntity<>(userService.changePassword(changePassword), HttpStatus.OK);
     }
 }

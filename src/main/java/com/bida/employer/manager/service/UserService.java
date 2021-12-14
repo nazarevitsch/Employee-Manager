@@ -129,6 +129,20 @@ public class UserService implements UserDetailsService {
         return new TokenDTOResponse("Bearer " + jwtUtilService.generateToken(userDetails));
     }
 
+    public UserDTOResponse changePassword(ChangePasswordDTO changePassword) {
+        User user = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        if (!user.getPassword().equals(changePassword.getOldPassword())) {
+            throw new BadRequestException("Old password is wrong!");
+        }
+        if (changePassword.getOldPassword().equals(changePassword.getNewPassword())) {
+            throw new BadRequestException("Old password and new one are same!");
+        }
+        validator.validatePassword(changePassword.getNewPassword(), user.getEmail());
+        user.setPassword(changePassword.getNewPassword());
+
+        return userMapper.entityToDto(userRepository.save(user));
+    }
+
     public void commonValidation(UserRegistrationDTO userDTO) {
         validator.validateEmail(userDTO.getEmail());
         validator.validatePhoneNumber(userDTO.getPhoneNumber());
