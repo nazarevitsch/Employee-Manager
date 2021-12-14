@@ -14,7 +14,8 @@
 
     <changeSet id="create_enum_type_user_role" author="nazar">
         <sql>
-            create type user_role as enum('INTERNAL_ADMINISTRATOR', 'OWNER', 'ADMINISTRATOR', 'EMPLOYEE')
+            drop type if exists user_role cascade;
+            create type user_role as enum('INTERNAL_ADMINISTRATOR', 'OWNER', 'ADMINISTRATOR', 'EMPLOYEE');
         </sql>
     </changeSet>
 

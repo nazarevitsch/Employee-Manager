@@ -48,7 +48,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(
                         "/",
                         "/user/login",
-                        "/user/refresh_token"
+                        "/user/refresh_token",
+                        "/organization/create",
+                        "/user/activate",
+                        "/user/check_email"
                 ).permitAll()
                 .anyRequest().authenticated()
                 .and().sessionManagement()

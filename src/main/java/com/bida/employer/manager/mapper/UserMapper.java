@@ -1,6 +1,7 @@
 package com.bida.employer.manager.mapper;
 
 import com.bida.employer.manager.domain.User;
+import com.bida.employer.manager.domain.dto.UserCreateDTO;
 import com.bida.employer.manager.domain.dto.UserDTOResponse;
 import com.bida.employer.manager.domain.dto.UserRegistrationDTO;
 import org.modelmapper.ModelMapper;
@@ -18,6 +19,10 @@ public class UserMapper {
     }
 
     public User dtoToEntity(UserRegistrationDTO userDTO) {
+        return modelMapper.map(userDTO, User.class);
+    }
+
+    public User dtoToEntity(UserCreateDTO userDTO) {
         return modelMapper.map(userDTO, User.class);
     }
 

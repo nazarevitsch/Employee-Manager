@@ -18,10 +18,9 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/create")
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')")
-    public ResponseEntity<MessageDTOResponse> registration(@RequestBody UserRegistrationDTO userDTO){
-        userService.create(userDTO);
-        return new ResponseEntity<>(new MessageDTOResponse("User was successfully registered."), HttpStatus.CREATED);
+    @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
+    public ResponseEntity<UserDTOResponse> registration(@RequestBody UserCreateDTO userDTO){
+        return new ResponseEntity<>(userService.create(userDTO), HttpStatus.CREATED);
     }
 
     @PostMapping("/activate")
@@ -29,8 +28,8 @@ public class UserController {
         return new ResponseEntity<>(userService.activate(activation), HttpStatus.OK);
     }
 
-    @GetMapping("/check_email/{email}")
-    public ResponseEntity<UserDTOResponse> checkEmail(@PathVariable String email) {
+    @GetMapping("/check_email")
+    public ResponseEntity<UserDTOResponse> checkEmail(@RequestParam("email") String email) {
         return new ResponseEntity<>(userService.checkEmail(email), HttpStatus.OK);
     }
 

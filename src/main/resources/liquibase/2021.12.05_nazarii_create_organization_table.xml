@@ -7,7 +7,8 @@
 >
     <changeSet id="create_enum_type_organization_type" author="nazar">
         <sql>
-            create type organization_type as enum('SMALL', 'MIDDLE', 'LARGE')
+            drop type if exists organization_type cascade;
+            create type organization_type as enum('SMALL', 'MIDDLE', 'LARGE');
         </sql>
     </changeSet>
 

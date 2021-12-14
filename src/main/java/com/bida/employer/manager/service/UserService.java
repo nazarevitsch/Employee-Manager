@@ -10,12 +10,9 @@ import com.bida.employer.manager.mapper.UserMapper;
 import com.bida.employer.manager.notification.EmailNotificationService;
 import com.bida.employer.manager.repository.UserRepository;
 import com.bida.employer.manager.validation.Validator;
-import liquibase.util.StringUtil;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.modelmapper.internal.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -49,25 +46,30 @@ public class UserService implements UserDetailsService {
     @Autowired
     private EmailNotificationService emailNotificationService;
 
-    public void create(UserRegistrationDTO userDTO) {
+    public UserDTOResponse create(UserCreateDTO userDTO) {
         validator.validateEmail(userDTO.getEmail());
         validator.validatePhoneNumber(userDTO.getPhoneNumber());
         if (userRepository.findUserByEmail(userDTO.getEmail()) != null) {
             throw new BadRequestException("User with email: " + userDTO.getEmail() + " is already existed.");
         }
         if (userRepository.findUserByPhoneNumber(userDTO.getPhoneNumber()) != null) {
-            throw new BadRequestException("User with phone number: " + userDTO.getEmail() + " is already existed.");
+            throw new BadRequestException("User with phone number: " + userDTO.getPhoneNumber() + " is already existed.");
         }
 
-        User user = userMapper.dtoToEntity(userDTO);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        MyUserDetails userDetails =((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
 
-        userRepository.save(user);
+        organizationService.checkOrganizationIsActive(userDetails.getUser().getOrganizationId());
+
+        User user = userMapper.dtoToEntity(userDTO);
+        user.setActive(false);
+        user.setOrganizationId(userDetails.getUser().getOrganizationId());
+        user = userRepository.save(user);
+        return userMapper.entityToDto(user);
     }
 
     public void createOwner(UserRegistrationDTO userDTO){
         User user = userMapper.dtoToEntity(userDTO);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         user.setUserRole(UserRole.OWNER);
         user.setActive(true);
         userRepository.save(user);
@@ -86,7 +88,7 @@ public class UserService implements UserDetailsService {
     public UserDTOResponse activate(ActivationDTO activation) {
         User user = findUserById(activation.getId());
         if (user.isActive()) {
-            throw new BadRequestException("User with id: " + activation.getId() + " is active");
+            throw new BadRequestException("User with id: " + activation.getId() + " is active.");
         }
         if (!user.getActivationCode().equals(activation.getActivationCode()) || user.getActivationCode() == null) {
             if (user.getActivationCode() != null) {
@@ -95,6 +97,7 @@ public class UserService implements UserDetailsService {
             throw new BadRequestException("Wrong activation code!");
         }
         userRepository.activate(activation.getId(), passwordEncoder.encode(activation.getPassword()));
+        user.setActive(true);
         return userMapper.entityToDto(user);
     }
 
@@ -102,10 +105,9 @@ public class UserService implements UserDetailsService {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userLogin.getEmail(), userLogin.getPassword()));
         } catch (Exception e) {
-            throw new BadCredentialsException("Email or Password are wrong!");
+            throw new BadRequestException("Email or Password are wrong!");
         }
-//        UserDetails userDetails = loadUserByUsername(userLogin.getEmail());
-        MyUserDetails userDetails = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        MyUserDetails userDetails = (MyUserDetails) loadUserByUsername(userLogin.getEmail());
         if (!userDetails.getUser().isActive()) {
             throw new BadRequestException("User with email: " + userDetails.getUsername() + " is inactive.");
         }

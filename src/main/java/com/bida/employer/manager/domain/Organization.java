@@ -2,7 +2,6 @@ package com.bida.employer.manager.domain;
 
 import com.bida.employer.manager.domain.enums.OrganizationType;
 import com.bida.employer.manager.domain.enums.PostgreSQLEnumType;
-import com.bida.employer.manager.domain.enums.UserRole;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
@@ -43,7 +42,7 @@ public class Organization {
     private LocalDateTime creationDate;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "o_organizatio_type")
+    @Column(name = "o_organization_type")
     @Type(type = "pgsql_enum")
     private OrganizationType organizationType;
 }
