@@ -47,4 +47,10 @@ public class UserController {
     public ResponseEntity<UserDTOResponse> changePassword(@RequestBody ChangePasswordDTO changePassword) {
         return new ResponseEntity<>(userService.changePassword(changePassword), HttpStatus.OK);
     }
+
+    @GetMapping("/password_restoration")
+    public ResponseEntity<?> forgotPassword(@RequestParam("email") String email) {
+        userService.forgotPassword(email);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

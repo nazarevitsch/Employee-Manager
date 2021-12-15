@@ -143,6 +143,17 @@ public class UserService implements UserDetailsService {
         return userMapper.entityToDto(userRepository.save(user));
     }
 
+    public void forgotPassword(String email) {
+        User user = findUserByEmail(email);
+        if (!user.isActive()) {
+            throw new BadRequestException("User with email: " + email + " is inactive!");
+        }
+        user.setActive(false);
+        String activationCode = RandomStringUtils.randomNumeric(8);
+        userRepository.setNewActivationCode(user.getId(), activationCode);
+        emailNotificationService.sendMessage(email, "Activation Code", "Your code: " + activationCode);
+    }
+
     public void commonValidation(UserRegistrationDTO userDTO) {
         validator.validateEmail(userDTO.getEmail());
         validator.validatePhoneNumber(userDTO.getPhoneNumber());

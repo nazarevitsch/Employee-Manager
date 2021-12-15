@@ -19,7 +19,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Modifying
     @Transactional
-    @Query(value = "update users set u_activation_code = :activationCode where u_id = :id", nativeQuery = true)
+    @Query(value = "update users set u_activation_code = :activationCode, u_is_active = false where u_id = :id", nativeQuery = true)
     void setNewActivationCode(@Param("id") UUID id, @Param("activationCode") String activationCode);
 
     @Modifying

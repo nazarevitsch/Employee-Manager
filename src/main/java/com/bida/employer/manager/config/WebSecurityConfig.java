@@ -46,12 +46,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .antMatchers(
-                        "/",
+                        "/organization/create",
                         "/user/login",
                         "/user/refresh_token",
-                        "/organization/create",
                         "/user/activate",
-                        "/user/check_email"
+                        "/user/check_email",
+                        "/user/password_restoration"
                 ).permitAll()
                 .anyRequest().authenticated()
                 .and().sessionManagement()
