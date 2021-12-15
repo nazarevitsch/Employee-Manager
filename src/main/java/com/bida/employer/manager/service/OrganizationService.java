@@ -25,10 +25,11 @@ public class OrganizationService {
     private UserService userService;
 
     public OrganizationDTOResponse create(OrganizationDTO organizationDTO) {
+        UserRegistrationDTO registrationDTO = organizationDTO.getRegistrationDTO();
         userService.commonValidation(organizationDTO.getRegistrationDTO());
+
         Organization organization = organizationRepository.save(organizationMapper.dtoToEntity(organizationDTO));
 
-        UserRegistrationDTO registrationDTO = organizationDTO.getRegistrationDTO();
         registrationDTO.setOrganizationId(organization.getId());
         userService.createOwner(registrationDTO);
 

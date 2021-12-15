@@ -57,7 +57,6 @@ public class UserService implements UserDetailsService {
         }
 
         MyUserDetails userDetails =((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-
         organizationService.checkOrganizationIsActive(userDetails.getUser().getOrganizationId());
 
         User user = userMapper.dtoToEntity(userDTO);
@@ -131,19 +130,19 @@ public class UserService implements UserDetailsService {
 
     public UserDTOResponse changePassword(ChangePasswordDTO changePassword) {
         User user = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
-        if (!user.getPassword().equals(changePassword.getOldPassword())) {
+        if (!passwordEncoder.matches(changePassword.getOldPassword(), user.getPassword())) {
             throw new BadRequestException("Old password is wrong!");
         }
-        if (changePassword.getOldPassword().equals(changePassword.getNewPassword())) {
+        if (passwordEncoder.matches(changePassword.getNewPassword(), user.getPassword())) {
             throw new BadRequestException("Old password and new one are same!");
         }
         validator.validatePassword(changePassword.getNewPassword(), user.getEmail());
-        user.setPassword(changePassword.getNewPassword());
+        user.setPassword(passwordEncoder.encode(changePassword.getNewPassword()));
 
         return userMapper.entityToDto(userRepository.save(user));
     }
 
-    public void forgotPassword(String email) {
+    public void passwordRestoration(String email) {
         User user = findUserByEmail(email);
         if (!user.isActive()) {
             throw new BadRequestException("User with email: " + email + " is inactive!");

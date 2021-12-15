@@ -23,9 +23,9 @@ public class UserController {
         return new ResponseEntity<>(userService.create(userDTO), HttpStatus.CREATED);
     }
 
-    @PostMapping("/activate")
-    public ResponseEntity<UserDTOResponse> activate(@RequestBody ActivationDTO activation) {
-        return new ResponseEntity<>(userService.activate(activation), HttpStatus.OK);
+    @PostMapping("/login")
+    public ResponseEntity<TokenDTOResponse> login(@RequestBody UserLoginDTO userDTO, HttpServletResponse response) {
+        return new ResponseEntity<>(userService.login(userDTO, response), HttpStatus.OK);
     }
 
     @GetMapping("/check_email")
@@ -33,9 +33,9 @@ public class UserController {
         return new ResponseEntity<>(userService.checkEmail(email), HttpStatus.OK);
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<TokenDTOResponse> login(@RequestBody UserLoginDTO userDTO, HttpServletResponse response) {
-        return new ResponseEntity<>(userService.login(userDTO, response), HttpStatus.OK);
+    @PostMapping("/activate")
+    public ResponseEntity<UserDTOResponse> activate(@RequestBody ActivationDTO activation) {
+        return new ResponseEntity<>(userService.activate(activation), HttpStatus.OK);
     }
 
     @GetMapping("/refresh_token")
@@ -50,7 +50,7 @@ public class UserController {
 
     @GetMapping("/password_restoration")
     public ResponseEntity<?> forgotPassword(@RequestParam("email") String email) {
-        userService.forgotPassword(email);
+        userService.passwordRestoration(email);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }
