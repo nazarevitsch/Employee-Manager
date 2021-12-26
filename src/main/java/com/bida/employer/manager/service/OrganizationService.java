@@ -1,8 +1,9 @@
 package com.bida.employer.manager.service;
 
 import com.bida.employer.manager.domain.Organization;
-import com.bida.employer.manager.domain.dto.OrganizationDTO;
+import com.bida.employer.manager.domain.dto.OrganizationCreateDTO;
 import com.bida.employer.manager.domain.dto.OrganizationDTOResponse;
+import com.bida.employer.manager.domain.dto.UserCreateDTO;
 import com.bida.employer.manager.domain.dto.UserRegistrationDTO;
 import com.bida.employer.manager.exception.BadRequestException;
 import com.bida.employer.manager.exception.NotFoundException;
@@ -11,6 +12,7 @@ import com.bida.employer.manager.repository.OrganizationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,21 +26,23 @@ public class OrganizationService {
     @Autowired
     private UserService userService;
 
-    public OrganizationDTOResponse create(OrganizationDTO organizationDTO) {
-        UserRegistrationDTO registrationDTO = organizationDTO.getRegistrationDTO();
-        userService.commonValidation(organizationDTO.getRegistrationDTO());
+    public OrganizationDTOResponse create(OrganizationCreateDTO organizationDTO) {
+        UserRegistrationDTO user = organizationDTO.getUser();
+        userService.commonValidation(user);
 
         Organization organization = organizationRepository.save(organizationMapper.dtoToEntity(organizationDTO));
 
-        registrationDTO.setOrganizationId(organization.getId());
-        userService.createOwner(registrationDTO);
+        userService.createOwner(user, organization.getId());
 
         return organizationMapper.entityToResponseDto(organization);
     }
 
     public Organization checkOrganizationIsActive(UUID organizationId) {
-        return Optional.of(findOrganizationById(organizationId))
-                .orElseThrow(() -> new BadRequestException("Organization with id: " + organizationId + " doesn't active."));
+        Organization organization = findOrganizationById(organizationId);
+        if (organization.getActiveEndDate() == null || organization.getActiveEndDate().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Organization with id: " + organizationId + " doesn't active.");
+        }
+        return organization;
     }
 
     public Organization findOrganizationById(UUID id) {

@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -59,6 +60,8 @@ public class UserService implements UserDetailsService {
         MyUserDetails userDetails =((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
         organizationService.checkOrganizationIsActive(userDetails.getUser().getOrganizationId());
 
+//        TO DO check organization size
+
         User user = userMapper.dtoToEntity(userDTO);
         user.setActive(false);
         user.setOrganizationId(userDetails.getUser().getOrganizationId());
@@ -66,11 +69,12 @@ public class UserService implements UserDetailsService {
         return userMapper.entityToDto(user);
     }
 
-    public void createOwner(UserRegistrationDTO userDTO){
+    public void createOwner(UserRegistrationDTO userDTO, UUID organizationId){
         User user = userMapper.dtoToEntity(userDTO);
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         user.setUserRole(UserRole.OWNER);
         user.setActive(true);
+        user.setOrganizationId(organizationId);
         userRepository.save(user);
     }
 
@@ -78,7 +82,8 @@ public class UserService implements UserDetailsService {
         User user = findUserByEmail(email);
         if (!user.isActive()) {
             String activationCode = RandomStringUtils.randomNumeric(8);
-            userRepository.setNewActivationCode(user.getId(), activationCode);
+            LocalDateTime expirationTime = LocalDateTime.now().plusMinutes(10);
+            userRepository.setActivationCodeAndCodeExpirationDateById(user.getId(), expirationTime, activationCode);
             emailNotificationService.sendMessage(email, "Activation Code", "Your code: " + activationCode);
         }
         return userMapper.entityToDto(user);
@@ -89,27 +94,32 @@ public class UserService implements UserDetailsService {
         if (user.isActive()) {
             throw new BadRequestException("User with id: " + activation.getId() + " is active.");
         }
+        if (user.getActivationCodeExpiration().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Activation code is expired");
+        }
         if (!user.getActivationCode().equals(activation.getActivationCode()) || user.getActivationCode() == null) {
             if (user.getActivationCode() != null) {
-                userRepository.setNullActivationCode(activation.getId());
+                userRepository.setNullActivationCodeById(activation.getId());
             }
             throw new BadRequestException("Wrong activation code!");
         }
+        validator.validatePassword(activation.getPassword(), user.getEmail());
         userRepository.activate(activation.getId(), passwordEncoder.encode(activation.getPassword()));
         user.setActive(true);
         return userMapper.entityToDto(user);
     }
 
     public TokenDTOResponse login(UserLoginDTO userLogin, HttpServletResponse response) {
+        MyUserDetails userDetails = (MyUserDetails) loadUserByUsername(userLogin.getEmail());
+        if (!userDetails.getUser().isActive()) {
+            throw new BadRequestException("User with email: " + userDetails.getUsername() + " is inactive.");
+        }
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userLogin.getEmail(), userLogin.getPassword()));
         } catch (Exception e) {
             throw new BadRequestException("Email or Password are wrong!");
         }
-        MyUserDetails userDetails = (MyUserDetails) loadUserByUsername(userLogin.getEmail());
-        if (!userDetails.getUser().isActive()) {
-            throw new BadRequestException("User with email: " + userDetails.getUsername() + " is inactive.");
-        }
+
         Cookie cookie = new Cookie("refreshToken", generateRefreshToken(userDetails));
         cookie.setPath("/");
         response.addCookie(cookie);
@@ -130,12 +140,14 @@ public class UserService implements UserDetailsService {
 
     public UserDTOResponse changePassword(ChangePasswordDTO changePassword) {
         User user = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+
         if (!passwordEncoder.matches(changePassword.getOldPassword(), user.getPassword())) {
             throw new BadRequestException("Old password is wrong!");
         }
         if (passwordEncoder.matches(changePassword.getNewPassword(), user.getPassword())) {
             throw new BadRequestException("Old password and new one are same!");
         }
+
         validator.validatePassword(changePassword.getNewPassword(), user.getEmail());
         user.setPassword(passwordEncoder.encode(changePassword.getNewPassword()));
 
@@ -149,18 +161,21 @@ public class UserService implements UserDetailsService {
         }
         user.setActive(false);
         String activationCode = RandomStringUtils.randomNumeric(8);
-        userRepository.setNewActivationCode(user.getId(), activationCode);
+        LocalDateTime expirationTime = LocalDateTime.now().plusMinutes(10);
+        userRepository.setActivationCodeAndCodeExpirationDateById(user.getId(), expirationTime, activationCode);
         emailNotificationService.sendMessage(email, "Activation Code", "Your code: " + activationCode);
     }
 
     public void commonValidation(UserRegistrationDTO userDTO) {
-        validator.validateEmail(userDTO.getEmail());
-        validator.validatePhoneNumber(userDTO.getPhoneNumber());
-        validator.validatePassword(userDTO.getPassword(), userDTO.getEmail());
-
         if (userRepository.findUserByEmail(userDTO.getEmail()) != null) {
             throw new BadRequestException("User with email: " + userDTO.getEmail() + " is already existed.");
         }
+        if (userRepository.findUserByPhoneNumber(userDTO.getPhoneNumber()) != null) {
+            throw new BadRequestException("User with phone number: " + userDTO.getPhoneNumber() + " is already existed.");
+        }
+        validator.validateEmail(userDTO.getEmail());
+        validator.validatePhoneNumber(userDTO.getPhoneNumber());
+        validator.validatePassword(userDTO.getPassword(), userDTO.getEmail());
     }
 
     public User findUserByEmail(String email) {

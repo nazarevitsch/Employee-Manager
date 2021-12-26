@@ -18,11 +18,11 @@ public class UserMapper {
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
     }
 
-    public User dtoToEntity(UserRegistrationDTO userDTO) {
+    public User dtoToEntity(UserCreateDTO userDTO) {
         return modelMapper.map(userDTO, User.class);
     }
 
-    public User dtoToEntity(UserCreateDTO userDTO) {
+    public User dtoToEntity(UserRegistrationDTO userDTO) {
         return modelMapper.map(userDTO, User.class);
     }
 

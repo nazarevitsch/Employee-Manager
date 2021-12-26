@@ -7,4 +7,5 @@
     <include file="2021.12.05_nazarii_create_organization_table.xml" relativeToChangelogFile="true"/>
     <include file="2021.12.09_nazarii_create_user_table.xml" relativeToChangelogFile="true"/>
     <include file="2021.12.12_nazarii_create_rule_table.xml" relativeToChangelogFile="true"/>
+    <include file="2021.12.18_nazarii_create_shift_table.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/user")
@@ -19,12 +20,12 @@ public class UserController {
 
     @PostMapping("/create")
     @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
-    public ResponseEntity<UserDTOResponse> registration(@RequestBody UserCreateDTO userDTO){
+    public ResponseEntity<UserDTOResponse> registration(@Valid @RequestBody UserCreateDTO userDTO){
         return new ResponseEntity<>(userService.create(userDTO), HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<TokenDTOResponse> login(@RequestBody UserLoginDTO userDTO, HttpServletResponse response) {
+    public ResponseEntity<TokenDTOResponse> login(@Valid @RequestBody UserLoginDTO userDTO, HttpServletResponse response) {
         return new ResponseEntity<>(userService.login(userDTO, response), HttpStatus.OK);
     }
 
@@ -34,7 +35,7 @@ public class UserController {
     }
 
     @PostMapping("/activate")
-    public ResponseEntity<UserDTOResponse> activate(@RequestBody ActivationDTO activation) {
+    public ResponseEntity<UserDTOResponse> activate(@Valid @RequestBody ActivationDTO activation) {
         return new ResponseEntity<>(userService.activate(activation), HttpStatus.OK);
     }
 
@@ -44,12 +45,12 @@ public class UserController {
     }
 
     @PostMapping("/change_password")
-    public ResponseEntity<UserDTOResponse> changePassword(@RequestBody ChangePasswordDTO changePassword) {
+    public ResponseEntity<UserDTOResponse> changePassword(@Valid @RequestBody ChangePasswordDTO changePassword) {
         return new ResponseEntity<>(userService.changePassword(changePassword), HttpStatus.OK);
     }
 
     @GetMapping("/password_restoration")
-    public ResponseEntity<?> forgotPassword(@RequestParam("email") String email) {
+    public ResponseEntity<?> passwordRestoration(@RequestParam("email") String email) {
         userService.passwordRestoration(email);
         return new ResponseEntity<>(HttpStatus.OK);
     }

@@ -5,13 +5,29 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd"
 >
+    <changeSet id="create_enum_substitute_me_rule" author="nazar">
+        <sql>
+            drop type if exists substitute_me_rule cascade;
+            create type substitute_me_rule as enum('PROHIBITED', 'ALLOW_NEED_APPROVE', 'ALLOW_WITHOUT_APPROVE');
+        </sql>
+    </changeSet>
+
+    <changeSet id="create_enum_swap_shifts_rule" author="nazar">
+        <sql>
+            drop type if exists swap_shifts_rule cascade;
+            create type swap_shifts_rule as enum('PROHIBITED', 'ALLOW_NEED_APPROVE', 'ALLOW_WITHOUT_APPROVE');
+        </sql>
+    </changeSet>
+
     <changeSet id="create-rule-table" author="nazarii" >
         <createTable tableName="rule">
             <column defaultValueComputed="uuid_generate_v4()" name="r_id" type="uuid">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="pk_rule"/>
             </column>
-            <column name="r_last_update_id" type="uuid"/>
+            <column name="r_swap_shifts_rule" type="swap_shifts_rule"/>
+            <column name="r_substitute_me_rule" type="substitute_me_rule"/>
             <column name="r_last_update_date" type="timestamp"/>
+            <column name="r_last_update_user_id" type="uuid"/>
             <column name="r_organization_id" type="uuid"/>
         </createTable>
     </changeSet>

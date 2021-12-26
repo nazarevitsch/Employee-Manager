@@ -1,7 +1,7 @@
 package com.bida.employer.manager.mapper;
 
 import com.bida.employer.manager.domain.Organization;
-import com.bida.employer.manager.domain.dto.OrganizationDTO;
+import com.bida.employer.manager.domain.dto.OrganizationCreateDTO;
 import com.bida.employer.manager.domain.dto.OrganizationDTOResponse;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -17,7 +17,7 @@ public class OrganizationMapper {
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
     }
 
-    public Organization dtoToEntity(OrganizationDTO organizationDTO) {
+    public Organization dtoToEntity(OrganizationCreateDTO organizationDTO) {
         return modelMapper.map(organizationDTO, Organization.class);
     }
 

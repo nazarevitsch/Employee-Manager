@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Repository
@@ -19,13 +20,15 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Modifying
     @Transactional
-    @Query(value = "update users set u_activation_code = :activationCode, u_is_active = false where u_id = :id", nativeQuery = true)
-    void setNewActivationCode(@Param("id") UUID id, @Param("activationCode") String activationCode);
+    @Query(value = "update users set u_activation_code = :activationCode, u_activation_code_expiration = :expirationTime, u_is_active = false where u_id = :id", nativeQuery = true)
+    void setActivationCodeAndCodeExpirationDateById(@Param("id") UUID id,
+                                                    @Param("expirationTime") LocalDateTime expirationTime,
+                                                    @Param("activationCode") String activationCode);
 
     @Modifying
     @Transactional
     @Query(value = "update users set u_activation_code = null where u_id = :id", nativeQuery = true)
-    void setNullActivationCode(@Param("id") UUID id);
+    void setNullActivationCodeById(@Param("id") UUID id);
 
     @Transactional
     @Modifying

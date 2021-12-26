@@ -37,6 +37,12 @@ public class User {
     @Column(name = "u_password")
     private String password;
 
+    @Column(name = "u_last_name")
+    private String lastName;
+
+    @Column(name = "u_first_name")
+    private String firstName;
+
     @Column(name = "u_phone_number")
     private String phoneNumber;
 
@@ -52,6 +58,9 @@ public class User {
 
     @Column(name = "u_activation_code")
     private String activationCode;
+
+    @Column(name = "u_activation_code_expiration")
+    private LocalDateTime activationCodeExpiration;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "u_user_role")
