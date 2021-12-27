@@ -37,12 +37,13 @@ public class OrganizationService {
         return organizationMapper.entityToResponseDto(organization);
     }
 
-    public Organization checkOrganizationIsActive(UUID organizationId) {
-        Organization organization = findOrganizationById(organizationId);
-        if (organization.getActiveEndDate() == null || organization.getActiveEndDate().isBefore(LocalDateTime.now())) {
-            throw new BadRequestException("Organization with id: " + organizationId + " doesn't active.");
-        }
-        return organization;
+    public Organization isOrganizationActive(UUID organizationId) {
+        return findOrganizationById(organizationId);
+//        Organization organization = findOrganizationById(organizationId);
+//        if (organization.getActiveEndDate() == null || organization.getActiveEndDate().isBefore(LocalDateTime.now())) {
+//            throw new BadRequestException("Organization with id: " + organizationId + " doesn't active.");
+//        }
+//        return organization;
     }
 
     public Organization findOrganizationById(UUID id) {

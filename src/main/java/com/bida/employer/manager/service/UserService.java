@@ -1,6 +1,7 @@
 package com.bida.employer.manager.service;
 
 import com.bida.employer.manager.domain.MyUserDetails;
+import com.bida.employer.manager.domain.Organization;
 import com.bida.employer.manager.domain.User;
 import com.bida.employer.manager.domain.dto.*;
 import com.bida.employer.manager.domain.enums.UserRole;
@@ -58,13 +59,18 @@ public class UserService implements UserDetailsService {
         }
 
         MyUserDetails userDetails =((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-        organizationService.checkOrganizationIsActive(userDetails.getUser().getOrganizationId());
+        UUID organizationId = userDetails.getUser().getOrganizationId();
 
-//        TO DO check organization size
+        Organization organization = organizationService.isOrganizationActive(organizationId);
+
+        int count = userRepository.countEmployersByOrganizationId(organizationId);
+        if (count >= organization.getOrganizationType().getSize()) {
+            throw new BadRequestException("Organization with id: " + organizationId + " has max size.");
+        }
 
         User user = userMapper.dtoToEntity(userDTO);
         user.setActive(false);
-        user.setOrganizationId(userDetails.getUser().getOrganizationId());
+        user.setOrganizationId(organizationId);
         user = userRepository.save(user);
         return userMapper.entityToDto(user);
     }

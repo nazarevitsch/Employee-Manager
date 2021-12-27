@@ -3,14 +3,14 @@ package com.bida.employer.manager.domain.dto;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotEmpty;
 
 @Data
 public class UserLoginDTO {
 
-    @NotNull(message = "Email can't be null")
+    @NotEmpty(message = "Email can't be null or empty.")
     private String email;
 
-    @NotNull(message = "Password can't be null")
+    @NotEmpty(message = "Password can't be null or empty.")
     private String password;
 }

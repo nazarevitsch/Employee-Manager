@@ -34,4 +34,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Modifying
     @Query(value = "update users set u_activation_code = null, u_is_active = true, u_password = :password where u_id = :id", nativeQuery = true)
     void activate(@Param("id") UUID id, @Param("password") String password);
+
+    @Query(value = "select count(*) from users where u_organization_id = :organizationId", nativeQuery = true)
+    int countEmployersByOrganizationId(@Param("organizationId") UUID organizationId);
 }
