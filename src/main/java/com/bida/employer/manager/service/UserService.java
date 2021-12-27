@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -47,6 +48,37 @@ public class UserService implements UserDetailsService {
     private OrganizationService organizationService;
     @Autowired
     private EmailNotificationService emailNotificationService;
+
+    public List<UserDTOResponse> getAllUsers() {
+        MyUserDetails userDetails =((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+
+        List<User> users = userRepository.findAllByOrganizationId(userDetails.getUser().getOrganizationId());
+
+        return userMapper.entityToDto(users);
+    }
+
+    public UserDTOResponse deleteUser(UUID userId) {
+        User user = findUserById(userId);
+
+        MyUserDetails userDetails =((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+
+        if (user.getId().equals(userDetails.getUser().getId())) {
+            throw new BadRequestException("You can't delete yourself.");
+        }
+
+        if (!user.getOrganizationId().equals(userDetails.getUser().getOrganizationId())) {
+            throw new BadRequestException("User with id: " + userId + " is from organization.");
+        }
+
+        if (user.isDeleted()) {
+            throw new BadRequestException("User with id: " + userId + " is deleted.");
+        }
+
+        userRepository.deleteById(userId);
+        user.setDeleted(true);
+
+        return userMapper.entityToDto(user);
+    }
 
     public UserDTOResponse create(UserCreateDTO userDTO) {
         validator.validateEmail(userDTO.getEmail());

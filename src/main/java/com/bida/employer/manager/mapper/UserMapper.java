@@ -8,6 +8,9 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Component
 public class UserMapper {
 
@@ -28,5 +31,9 @@ public class UserMapper {
 
     public UserDTOResponse entityToDto(User user) {
         return modelMapper.map(user, UserDTOResponse.class);
+    }
+
+    public List<UserDTOResponse> entityToDto(List<User> users) {
+        return users.stream().map(this::entityToDto).collect(Collectors.toList());
     }
 }

@@ -19,13 +19,13 @@ public class JWTUtilService {
     private String ACCESS_SECRET_KEY;
 
     @Value(value = "${jwt.access.available.time}")
-    private int ACCESS_AVAILABLE_TIME;
+    private long ACCESS_AVAILABLE_TIME;
 
     @Value(value = "${jwt.refresh.secret.key}")
     private String REFRESH_SECRET_KEY;
 
     @Value(value = "${jwt.refresh.available.time}")
-    private int REFRESH_AVAILABLE_TIME;
+    private long REFRESH_AVAILABLE_TIME;
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);

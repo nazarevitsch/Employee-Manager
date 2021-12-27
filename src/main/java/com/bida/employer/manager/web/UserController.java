@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/user")
@@ -18,9 +20,14 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @GetMapping("/all")
+    public ResponseEntity<List<UserDTOResponse>> getAllUsers() {
+        return new ResponseEntity<>(userService.getAllUsers(), HttpStatus.OK);
+    }
+
     @PostMapping("/create")
     @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
-    public ResponseEntity<UserDTOResponse> registration(@Valid @RequestBody UserCreateDTO userDTO){
+    public ResponseEntity<UserDTOResponse> registration(@Valid @RequestBody UserCreateDTO userDTO) {
         return new ResponseEntity<>(userService.create(userDTO), HttpStatus.CREATED);
     }
 
@@ -53,5 +60,11 @@ public class UserController {
     public ResponseEntity<?> passwordRestoration(@RequestParam("email") String email) {
         userService.passwordRestoration(email);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping("/delete")
+    @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
+    public ResponseEntity<UserDTOResponse> delete(@RequestParam("id") UUID id) {
+        return new ResponseEntity<>(userService.deleteUser(id), HttpStatus.CREATED);
     }
 }

@@ -2,13 +2,12 @@ package com.bida.employer.manager.domain;
 
 import com.bida.employer.manager.domain.enums.PostgreSQLEnumType;
 import com.bida.employer.manager.domain.enums.UserRole;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.*;
 import lombok.Data;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -19,6 +18,7 @@ import java.util.UUID;
         name = "pgsql_enum",
         typeClass = PostgreSQLEnumType.class
 )
+@SQLDelete(sql = "update users set u_is_deleted=true WHERE u_id=?")
 public class User {
 
     @Id
@@ -52,6 +52,9 @@ public class User {
     @CreationTimestamp
     @Column(name = "u_creation_date")
     private LocalDateTime creationDate;
+
+    @Column(name = "u_is_deleted")
+    private boolean isDeleted;
 
     @Column(name = "u_is_active")
     private boolean isActive;

@@ -1,6 +1,5 @@
 package com.bida.employer.manager.domain.dto;
 
-
 import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
