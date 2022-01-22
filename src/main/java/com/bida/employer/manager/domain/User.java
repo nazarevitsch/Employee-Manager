@@ -59,12 +59,6 @@ public class User {
     @Column(name = "u_is_active")
     private boolean isActive;
 
-    @Column(name = "u_activation_code")
-    private String activationCode;
-
-    @Column(name = "u_activation_code_expiration")
-    private LocalDateTime activationCodeExpiration;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "u_user_role")
     @Type(type = "pgsql_enum")

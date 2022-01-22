@@ -37,8 +37,6 @@
             <column name="u_organization_id" type="uuid"/>
             <column name="u_is_deleted" type="bool" defaultValue="false"/>
             <column name="u_is_active" type="bool"/>
-            <column name="u_activation_code" type="varchar(8)"/>
-            <column name="u_activation_code_expiration" type="timestamp"/>
             <column name="u_user_role" type="user_role"/>
         </createTable>
     </changeSet>

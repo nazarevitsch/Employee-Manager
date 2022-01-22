@@ -9,10 +9,10 @@ import java.util.UUID;
 public class ActivationDTO {
 
     @NotNull(message = "Id can't be null.")
-    private UUID id;
+    private UUID userId;
 
-    @NotNull(message = "Activation code can't be null.")
-    private String activationCode;
+    @NotNull(message = "Token code can't be null.")
+    private String token;
 
     @NotNull(message = "Password can't be null.")
     private String password;

@@ -8,4 +8,5 @@
     <include file="2021.12.09_nazarii_create_user_table.xml" relativeToChangelogFile="true"/>
     <include file="2021.12.12_nazarii_create_rule_table.xml" relativeToChangelogFile="true"/>
     <include file="2021.12.18_nazarii_create_shift_table.xml" relativeToChangelogFile="true"/>
+    <include file="2022.01.21_nazarii_create_restore_password_table.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

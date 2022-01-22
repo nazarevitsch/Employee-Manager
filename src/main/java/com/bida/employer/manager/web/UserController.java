@@ -20,9 +20,31 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @PostMapping("/activate")
+    public ResponseEntity<UserDTOResponse> activate(@Valid @RequestBody ActivationDTO activation) {
+        return new ResponseEntity<>(userService.activate(activation), HttpStatus.OK);
+    }
+
+    @DeleteMapping
+    public ResponseEntity cancelPasswordRecovery(@RequestParam("userId") UUID userId){
+        userService.cancelPasswordRecovery(userId);
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @PostMapping("/password_recovery")
+    public ResponseEntity<?> passwordRestoration(@RequestParam("email") String email) {
+        userService.passwordRestoration(email);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping("/check_email")
+    public ResponseEntity<CheckEmailDTOResponse> checkEmail(@RequestParam("email") String email) {
+        return new ResponseEntity<>(userService.checkEmail(email), HttpStatus.OK);
+    }
+
     @GetMapping("/all")
     public ResponseEntity<List<UserDTOResponse>> getAllUsers() {
-        return new ResponseEntity<>(userService.getAllUsers(), HttpStatus.OK);
+        return new ResponseEntity<>(userService.getAllUsersOfCurrentOrganization(), HttpStatus.OK);
     }
 
     @PostMapping("/create")
@@ -36,16 +58,6 @@ public class UserController {
         return new ResponseEntity<>(userService.login(userDTO, response), HttpStatus.OK);
     }
 
-    @GetMapping("/check_email")
-    public ResponseEntity<UserDTOResponse> checkEmail(@RequestParam("email") String email) {
-        return new ResponseEntity<>(userService.checkEmail(email), HttpStatus.OK);
-    }
-
-    @PostMapping("/activate")
-    public ResponseEntity<UserDTOResponse> activate(@Valid @RequestBody ActivationDTO activation) {
-        return new ResponseEntity<>(userService.activate(activation), HttpStatus.OK);
-    }
-
     @GetMapping("/refresh_token")
     public ResponseEntity<TokenDTOResponse> refreshToken(@CookieValue(name = "refreshToken") String token) {
         return new ResponseEntity<>(userService.generateAccessToken(token), HttpStatus.OK);
@@ -54,12 +66,6 @@ public class UserController {
     @PostMapping("/change_password")
     public ResponseEntity<UserDTOResponse> changePassword(@Valid @RequestBody ChangePasswordDTO changePassword) {
         return new ResponseEntity<>(userService.changePassword(changePassword), HttpStatus.OK);
-    }
-
-    @GetMapping("/password_restoration")
-    public ResponseEntity<?> passwordRestoration(@RequestParam("email") String email) {
-        userService.passwordRestoration(email);
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping("/delete")

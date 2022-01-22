@@ -51,7 +51,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/user/refresh_token",
                         "/user/activate",
                         "/user/check_email",
-                        "/user/password_restoration"
+                        "/user/password_recovery"
                 ).permitAll()
                 .anyRequest().authenticated()
                 .and().sessionManagement()
