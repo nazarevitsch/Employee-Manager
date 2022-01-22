@@ -1,14 +1,14 @@
 package com.bida.employer.manager.validation;
 
-import com.bida.employer.manager.domain.dto.UserRegistrationDTO;
 import com.bida.employer.manager.exception.BadRequestException;
 import org.springframework.stereotype.Component;
 
 import java.util.regex.Pattern;
 
 @Component
-public class Validator {
-    private static final Pattern emailPattern = Pattern.compile("^[a-zA-Z0-9_!#$%&’*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$");
+public class ValidationService {
+    private static final Pattern emailRecipientPartPattern = Pattern.compile("^[a-zA-Z0-9]([a-zA-Z0-9][_!#$%&\\\"’*+/=?`{|}~^.\\-]?)+[a-zA-Z0-9]$");
+    private static final Pattern emailDomainPartPattern = Pattern.compile("^[a-zA-Z0-9]{2,}(\\.[a-zA-Z0-9]{2,})?\\.[a-z]{2,}$");
     private static final Pattern phoneNumberPattern = Pattern.compile("^\\+380\\d{9}$");
 
     private static final int MIN_PASSWORD_LENGTH = 10;
@@ -19,7 +19,7 @@ public class Validator {
     private static final int MIN_SPECIAL_CHARACTER_AMOUNT = 2;
     private static final int MIN_DIGIT_AMOUNT = 2;
 
-    private static final int MAX_AMOUNT_OF_SAME_CHARS = 2;
+    private static final int MAX_AMOUNT_OF_SAME_CHARS = 3;
 
     private static final String KEYBOARD_PATTERN_NUMBERS = "01234567890";
     private static final String KEYBOARD_PATTERN_NUMBERS_REVERSED = "09876543210";
@@ -133,13 +133,20 @@ public class Validator {
                 }
             }
             if (count > MAX_AMOUNT_OF_SAME_CHARS) {
-                throw new BadRequestException("Password can't contain more then 2 same character.");
+                throw new BadRequestException("Password can't contain more then 3 same character.");
             }
         }
     }
 
     public void validateEmail(String email) {
-        if(!emailPattern.matcher(email).matches()) {
+        String[] emailsParts = email.split("@");
+        if (emailsParts.length != 2) {
+            throw new BadRequestException("Email: " + email + " is not valid");
+        }
+        if(!emailRecipientPartPattern.matcher(emailsParts[0]).matches()) {
+            throw new BadRequestException("Email: " + email + " is not valid");
+        }
+        if(!emailDomainPartPattern.matcher(emailsParts[1]).matches()) {
             throw new BadRequestException("Email: " + email + " is not valid");
         }
     }

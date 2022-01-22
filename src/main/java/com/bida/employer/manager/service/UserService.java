@@ -12,7 +12,7 @@ import com.bida.employer.manager.mapper.UserMapper;
 import com.bida.employer.manager.notification.EmailNotificationService;
 import com.bida.employer.manager.repository.RestorePasswordRepository;
 import com.bida.employer.manager.repository.UserRepository;
-import com.bida.employer.manager.validation.Validator;
+import com.bida.employer.manager.validation.ValidationService;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,7 +24,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
@@ -48,7 +47,7 @@ public class UserService implements UserDetailsService {
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
-    private Validator validator;
+    private ValidationService validator;
     @Autowired
     private UserMapper userMapper;
     @Autowired
