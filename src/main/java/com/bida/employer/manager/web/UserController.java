@@ -20,39 +20,6 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @PostMapping("/activate")
-    public ResponseEntity<UserDTOResponse> activate(@Valid @RequestBody ActivationDTO activation) {
-        return new ResponseEntity<>(userService.activate(activation), HttpStatus.OK);
-    }
-
-    @DeleteMapping
-    public ResponseEntity cancelPasswordRecovery(@RequestParam("userId") UUID userId){
-        userService.cancelPasswordRecovery(userId);
-        return new ResponseEntity(HttpStatus.OK);
-    }
-
-    @PostMapping("/password_recovery")
-    public ResponseEntity<?> passwordRestoration(@RequestParam("email") String email) {
-        userService.passwordRestoration(email);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @GetMapping("/check_email")
-    public ResponseEntity<CheckEmailDTOResponse> checkEmail(@RequestParam("email") String email) {
-        return new ResponseEntity<>(userService.checkEmail(email), HttpStatus.OK);
-    }
-
-    @GetMapping("/all")
-    public ResponseEntity<List<UserDTOResponse>> getAllUsers() {
-        return new ResponseEntity<>(userService.getAllUsersOfCurrentOrganization(), HttpStatus.OK);
-    }
-
-    @PostMapping("/create")
-    @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
-    public ResponseEntity<UserDTOResponse> registration(@Valid @RequestBody UserCreateDTO userDTO) {
-        return new ResponseEntity<>(userService.create(userDTO), HttpStatus.CREATED);
-    }
-
     @PostMapping("/login")
     public ResponseEntity<TokenDTOResponse> login(@Valid @RequestBody UserLoginDTO userDTO, HttpServletResponse response) {
         return new ResponseEntity<>(userService.login(userDTO, response), HttpStatus.OK);
@@ -63,14 +30,30 @@ public class UserController {
         return new ResponseEntity<>(userService.generateAccessToken(token), HttpStatus.OK);
     }
 
-    @PostMapping("/change_password")
+    @PatchMapping
     public ResponseEntity<UserDTOResponse> changePassword(@Valid @RequestBody ChangePasswordDTO changePassword) {
         return new ResponseEntity<>(userService.changePassword(changePassword), HttpStatus.OK);
     }
 
-    @DeleteMapping("/delete")
+    @GetMapping
+    public ResponseEntity<List<UserDTOResponse>> getAllUsers() {
+        return new ResponseEntity<>(userService.getAllUsersOfCurrentOrganization(), HttpStatus.OK);
+    }
+
+    @GetMapping
+    public ResponseEntity<UserDTOResponse> getUser(@RequestParam("id") UUID userId) {
+        return new ResponseEntity<>(userService.getUser(userId), HttpStatus.OK);
+    }
+
+    @PostMapping
     @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
-    public ResponseEntity<UserDTOResponse> delete(@RequestParam("id") UUID id) {
+    public ResponseEntity<UserDTOResponse> createUser(@Valid @RequestBody UserCreateDTO userDTO) {
+        return new ResponseEntity<>(userService.create(userDTO), HttpStatus.CREATED);
+    }
+
+    @DeleteMapping
+    @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
+    public ResponseEntity<UserDTOResponse> deleteUser(@RequestParam("id") UUID id) {
         return new ResponseEntity<>(userService.deleteUser(id), HttpStatus.CREATED);
     }
 }

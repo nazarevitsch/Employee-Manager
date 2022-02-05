@@ -2,7 +2,7 @@ package com.bida.employer.manager.service;
 
 import com.bida.employer.manager.domain.MyUserDetails;
 import com.bida.employer.manager.domain.Organization;
-import com.bida.employer.manager.domain.RestorePassword;
+import com.bida.employer.manager.domain.PasswordRecovery;
 import com.bida.employer.manager.domain.User;
 import com.bida.employer.manager.domain.dto.*;
 import com.bida.employer.manager.domain.enums.UserRole;
@@ -10,7 +10,7 @@ import com.bida.employer.manager.exception.BadRequestException;
 import com.bida.employer.manager.exception.NotFoundException;
 import com.bida.employer.manager.mapper.UserMapper;
 import com.bida.employer.manager.notification.EmailNotificationService;
-import com.bida.employer.manager.repository.RestorePasswordRepository;
+import com.bida.employer.manager.repository.PasswordRecoveryRepository;
 import com.bida.employer.manager.repository.UserRepository;
 import com.bida.employer.manager.validation.ValidationService;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -39,7 +39,7 @@ public class UserService implements UserDetailsService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private RestorePasswordRepository restorePasswordRepository;
+    private PasswordRecoveryRepository restorePasswordRepository;
     @Autowired
     private JWTUtilService jwtUtilService;
     @Autowired
@@ -124,17 +124,28 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
-    public CheckEmailDTOResponse checkEmail(String email) {
+    public UserDTOResponse getUser(UUID userId) {
+        MyUserDetails userDetails = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+
+        User user = findUserById(userId);
+
+        if (user.getOrganizationId().equals(userDetails.getUser().getOrganizationId())) {
+            throw new BadRequestException("User with id: " + userId + " is from another organization.");
+        }
+        return userMapper.entityToDto(user);
+    }
+
+    public CheckUserDTOResponse checkUser(String email) {
         User user = findUserByEmail(email);
         if (!user.isActive()) {
-            restorePassword(user);
+            passwordRecovery(user);
         }
         return userMapper.entityToCheckEmailDto(user);
     }
 
     public UserDTOResponse activate(ActivationDTO activation) {
         User user = findUserById(activation.getUserId());
-        RestorePassword restorePassword = Optional.of(restorePasswordRepository.findByUserId(activation.getUserId()))
+        PasswordRecovery restorePassword = Optional.of(restorePasswordRepository.findByUserId(activation.getUserId()))
                 .orElseThrow(() -> new NotFoundException("Password restore for user: " + user.getId() + " wasn't initiate."));
 
         if (restorePassword.getExpirationDate().isBefore(LocalDateTime.now())) {
@@ -195,12 +206,12 @@ public class UserService implements UserDetailsService {
         return userMapper.entityToDto(userRepository.save(user));
     }
 
-    public void passwordRestoration(String email) {
+    public void passwordRecovery(String email) {
         User user = findUserByEmail(email);
         if (!user.isActive()) {
             throw new BadRequestException("User with email: " + email + " is inactive!");
         }
-        restorePassword(user);
+        passwordRecovery(user);
     }
 
     public void commonValidation(UserRegistrationDTO userDTO) {
@@ -225,13 +236,13 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new NotFoundException("User with id: " + id + " doesn't exist."));
     }
 
-    public void restorePassword(User user) {
+    public void passwordRecovery(User user) {
         restorePasswordRepository.deleteByUserId(user.getId());
 
         String activationToken = RandomStringUtils.randomAlphanumeric(20);
         String activationTokenEncoded = passwordEncoder.encode(activationToken);
 
-        RestorePassword restorePassword = new RestorePassword();
+        PasswordRecovery restorePassword = new PasswordRecovery();
         restorePassword.setToken(activationTokenEncoded);
         restorePassword.setExpirationDate(LocalDateTime.now().plusHours(3));
         restorePassword.setUserId(user.getId());

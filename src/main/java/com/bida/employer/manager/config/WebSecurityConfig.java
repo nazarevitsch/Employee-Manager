@@ -45,14 +45,20 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable()
                 .authorizeRequests()
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .antMatchers(
-                        "/organization/create",
+                .antMatchers(HttpMethod.POST,
+                        "/user/password_recovery",
                         "/user/login",
-                        "/user/refresh_token",
-                        "/user/activate",
-                        "/user/check_email",
-                        "/user/password_recovery"
-                ).permitAll()
+                        "/user/activation",
+                        "/organization")
+                .permitAll()
+                .antMatchers(HttpMethod.DELETE,
+                        "/user/password_recovery")
+                .permitAll()
+                .antMatchers(HttpMethod.GET,
+                        "/user/activation",
+                        "user/refresh_token")
+                .permitAll()
+
                 .anyRequest().authenticated()
                 .and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);

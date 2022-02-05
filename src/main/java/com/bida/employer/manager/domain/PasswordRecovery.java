@@ -11,11 +11,11 @@ import java.util.UUID;
 
 @Data
 @Entity
-@Table(name = "restore_password")
-public class RestorePassword {
+@Table(name = "password_recovery")
+public class PasswordRecovery {
 
     @Id
-    @Column(name = "rp_id")
+    @Column(name = "pr_id")
     @Type(type = "pg-uuid")
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(
@@ -24,13 +24,13 @@ public class RestorePassword {
     )
     private UUID id;
 
-    @Column(name = "rp_token")
+    @Column(name = "pr_token")
     private String token;
 
-    @Column(name = "rp_user_id")
+    @Column(name = "pr_user_id")
     private UUID userId;
 
     @CreationTimestamp
-    @Column(name = "rp_expiration_date")
+    @Column(name = "pr_expiration_date")
     private LocalDateTime expirationDate;
 }
