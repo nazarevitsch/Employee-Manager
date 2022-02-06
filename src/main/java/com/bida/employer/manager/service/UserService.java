@@ -59,10 +59,11 @@ public class UserService implements UserDetailsService {
 
     public List<UserDTOResponse> getAllUsersOfCurrentOrganization() {
         MyUserDetails userDetails =((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        validateUserAccess(userDetails.getUser());
 
         List<User> users = userRepository.findAllByOrganizationId(userDetails.getUser().getOrganizationId());
 
-        // TO DO: migrate filtering to DB level
+        // TODO:: migrate filtering to DB level
         if (userDetails.getUser().getUserRole().equals(UserRole.EMPLOYEE)){
             return userMapper.entityToDto(users.stream().filter(user -> user.isActive() && !user.isDeleted()).collect(Collectors.toList()));
         }
@@ -70,8 +71,10 @@ public class UserService implements UserDetailsService {
     }
 
     public UserDTOResponse deleteUser(UUID userId) {
-        User user = findUserById(userId);
         MyUserDetails userDetails =((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        validateUserAccess(userDetails.getUser());
+
+        User user = findUserById(userId);
 
         if (user.getUserRole().equals(UserRole.OWNER)) {
             throw new BadRequestException("You can't delete OWNER.");
@@ -93,6 +96,9 @@ public class UserService implements UserDetailsService {
     }
 
     public UserDTOResponse create(UserCreateDTO userDTO) {
+        MyUserDetails userDetails =((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        validateUserAccess(userDetails.getUser());
+
         validator.validateEmail(userDTO.getEmail());
         validator.validatePhoneNumber(userDTO.getPhoneNumber());
         if (userRepository.findUserByEmail(userDTO.getEmail()) != null) {
@@ -102,9 +108,7 @@ public class UserService implements UserDetailsService {
             throw new BadRequestException("User with phone number: " + userDTO.getPhoneNumber() + " is already existed.");
         }
 
-        MyUserDetails userDetails =((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
         UUID organizationId = userDetails.getUser().getOrganizationId();
-
         Organization organization = organizationService.isOrganizationActive(organizationId);
 
         int count = userRepository.countEmployersByOrganizationId(organizationId);
@@ -119,7 +123,7 @@ public class UserService implements UserDetailsService {
         User user = userMapper.dtoToEntity(userDTO);
         user.setActive(false);
         user.setOrganizationId(organizationId);
-        user.setPassword(passwordEncoder.encode(RandomStringUtils.randomAlphanumeric(20)));
+        user.setPassword(passwordEncoder.encode(RandomStringUtils.randomAlphanumeric(22)));
 
         user = userRepository.save(user);
         return userMapper.entityToDto(user);
@@ -136,6 +140,7 @@ public class UserService implements UserDetailsService {
 
     public UserDTOResponse getUser(UUID userId) {
         MyUserDetails userDetails = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        validateUserAccess(userDetails.getUser());
 
         User user = findUserById(userId);
 
@@ -155,12 +160,13 @@ public class UserService implements UserDetailsService {
 
     public UserDTOResponse activate(ActivationDTO activation) {
         User user = findUserById(activation.getUserId());
+
         PasswordRecovery restorePassword = Optional.ofNullable(restorePasswordRepository.findByUserId(activation.getUserId()))
                 .orElseThrow(() -> new NotFoundException("Password recovery for user: " + user.getId() + " wasn't initiated."));
 
         if (restorePassword.getExpirationDate().isBefore(LocalDateTime.now())) {
             restorePasswordRepository.deleteByUserId(user.getId());
-            throw new BadRequestException("Activation code is expired");
+            throw new BadRequestException("Activation code is expired.");
         }
         if (!passwordEncoder.matches(activation.getToken(), restorePassword.getToken())) {
             restorePasswordRepository.deleteByUserId(user.getId());
@@ -177,9 +183,8 @@ public class UserService implements UserDetailsService {
 
     public TokenDTOResponse login(UserLoginDTO userLogin, HttpServletResponse response) {
         MyUserDetails userDetails = (MyUserDetails) loadUserByUsername(userLogin.getEmail());
-        if (!userDetails.getUser().isActive()) {
-            throw new BadRequestException("User with email: " + userDetails.getUsername() + " is inactive.");
-        }
+        validateUserAccess(userDetails.getUser());
+
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userLogin.getEmail(), userLogin.getPassword()));
         } catch (Exception e) {
@@ -206,6 +211,7 @@ public class UserService implements UserDetailsService {
 
     public UserDTOResponse changePassword(ChangePasswordDTO changePassword) {
         User user = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        validateUserAccess(user);
 
         if (!passwordEncoder.matches(changePassword.getOldPassword(), user.getPassword())) {
             throw new BadRequestException("Old password is wrong!");
@@ -222,13 +228,11 @@ public class UserService implements UserDetailsService {
 
     public void passwordRecovery(String email) {
         User user = findUserByEmail(email);
-        if (!user.isActive()) {
-            throw new BadRequestException("User with email: " + email + " is inactive!");
-        }
+        validateUserAccess(user);
         passwordRecovery(user);
     }
 
-    public void commonValidation(UserRegistrationDTO userDTO) {
+    public void ownerCreationValidation(UserRegistrationDTO userDTO) {
         if (userRepository.findUserByEmail(userDTO.getEmail()) != null) {
             throw new BadRequestException("User with email: " + userDTO.getEmail() + " is already existed.");
         }
@@ -253,7 +257,7 @@ public class UserService implements UserDetailsService {
     public void passwordRecovery(User user) {
         restorePasswordRepository.deleteByUserId(user.getId());
 
-        String activationToken = RandomStringUtils.randomAlphanumeric(20);
+        String activationToken = RandomStringUtils.randomAlphanumeric(25);
         String activationTokenEncoded = passwordEncoder.encode(activationToken);
 
         PasswordRecovery restorePassword = new PasswordRecovery();
@@ -263,7 +267,7 @@ public class UserService implements UserDetailsService {
 
         restorePasswordRepository.save(restorePassword);
 
-        // TO DO Refactor sending emails
+        // TODO: Refactor sending emails
         emailNotificationService.sendMessage(user.getEmail(), "Password recovery",
                 linkTemplate
                         .replace("{userId}", user.getId().toString())
@@ -278,5 +282,14 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
         return new MyUserDetails(findUserByEmail(s));
+    }
+
+    public void validateUserAccess(User user) {
+        if (!user.isActive()) {
+            throw new BadRequestException("User with email: " + user.getId() + " is inactive.");
+        }
+        if (user.isDeleted()) {
+            throw new BadRequestException("User with email: " + user.getId() + " is deleted.");
+        }
     }
 }
