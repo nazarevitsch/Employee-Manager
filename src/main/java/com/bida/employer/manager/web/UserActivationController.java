@@ -18,12 +18,12 @@ public class UserActivationController {
     @Autowired
     private UserService userService;
 
-    @PostMapping
-    public ResponseEntity<UserDTOResponse> activate(@Valid @RequestBody ActivationDTO activation) {
+    @PostMapping//
+    public ResponseEntity<UserDTOResponse> activateUser(@Valid @RequestBody ActivationDTO activation) {
         return new ResponseEntity<>(userService.activate(activation), HttpStatus.OK);
     }
 
-    @GetMapping
+    @GetMapping//
     public ResponseEntity<CheckUserDTOResponse> checkIsUserActive(@RequestParam("email") String email) {
         return new ResponseEntity<>(userService.checkUser(email), HttpStatus.OK);
     }

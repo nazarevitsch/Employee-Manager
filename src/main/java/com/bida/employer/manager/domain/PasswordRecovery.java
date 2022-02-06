@@ -30,7 +30,6 @@ public class PasswordRecovery {
     @Column(name = "pr_user_id")
     private UUID userId;
 
-    @CreationTimestamp
     @Column(name = "pr_expiration_date")
     private LocalDateTime expirationDate;
 }

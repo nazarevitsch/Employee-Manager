@@ -29,6 +29,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -55,10 +56,16 @@ public class UserService implements UserDetailsService {
     @Autowired
     private EmailNotificationService emailNotificationService;
 
+
     public List<UserDTOResponse> getAllUsersOfCurrentOrganization() {
         MyUserDetails userDetails =((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
 
         List<User> users = userRepository.findAllByOrganizationId(userDetails.getUser().getOrganizationId());
+
+        // TO DO: migrate filtering to DB level
+        if (userDetails.getUser().getUserRole().equals(UserRole.EMPLOYEE)){
+            return userMapper.entityToDto(users.stream().filter(user -> user.isActive() && !user.isDeleted()).collect(Collectors.toList()));
+        }
         return userMapper.entityToDto(users);
     }
 
@@ -66,11 +73,14 @@ public class UserService implements UserDetailsService {
         User user = findUserById(userId);
         MyUserDetails userDetails =((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
 
+        if (user.getUserRole().equals(UserRole.OWNER)) {
+            throw new BadRequestException("You can't delete OWNER.");
+        }
         if (user.getId().equals(userDetails.getUser().getId())) {
             throw new BadRequestException("You can't delete yourself.");
         }
         if (!user.getOrganizationId().equals(userDetails.getUser().getOrganizationId())) {
-            throw new BadRequestException("User with id: " + userId + " is from organization.");
+            throw new BadRequestException("User with id: " + userId + " is from another organization.");
         }
         if (user.isDeleted()) {
             throw new BadRequestException("User with id: " + userId + " is deleted.");
@@ -129,7 +139,7 @@ public class UserService implements UserDetailsService {
 
         User user = findUserById(userId);
 
-        if (user.getOrganizationId().equals(userDetails.getUser().getOrganizationId())) {
+        if (!user.getOrganizationId().equals(userDetails.getUser().getOrganizationId())) {
             throw new BadRequestException("User with id: " + userId + " is from another organization.");
         }
         return userMapper.entityToDto(user);
@@ -145,18 +155,22 @@ public class UserService implements UserDetailsService {
 
     public UserDTOResponse activate(ActivationDTO activation) {
         User user = findUserById(activation.getUserId());
-        PasswordRecovery restorePassword = Optional.of(restorePasswordRepository.findByUserId(activation.getUserId()))
-                .orElseThrow(() -> new NotFoundException("Password restore for user: " + user.getId() + " wasn't initiate."));
+        PasswordRecovery restorePassword = Optional.ofNullable(restorePasswordRepository.findByUserId(activation.getUserId()))
+                .orElseThrow(() -> new NotFoundException("Password recovery for user: " + user.getId() + " wasn't initiated."));
 
         if (restorePassword.getExpirationDate().isBefore(LocalDateTime.now())) {
             restorePasswordRepository.deleteByUserId(user.getId());
             throw new BadRequestException("Activation code is expired");
         }
         if (!passwordEncoder.matches(activation.getToken(), restorePassword.getToken())) {
+            restorePasswordRepository.deleteByUserId(user.getId());
             throw new BadRequestException("Wrong activation token!");
         }
+
         validator.validatePassword(activation.getPassword(), user.getEmail());
         userRepository.setNewPassword(user.getId(), passwordEncoder.encode(activation.getPassword()));
+        restorePasswordRepository.deleteByUserId(user.getId());
+
         user.setActive(true);
         return userMapper.entityToDto(user);
     }
@@ -227,7 +241,7 @@ public class UserService implements UserDetailsService {
     }
 
     public User findUserByEmail(String email) {
-        return Optional.of(userRepository.findUserByEmail(email))
+        return Optional.ofNullable(userRepository.findUserByEmail(email))
                 .orElseThrow(() -> new NotFoundException("User with email: " + email + " wasn't found."));
     }
 
