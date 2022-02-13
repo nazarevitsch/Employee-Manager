@@ -21,6 +21,9 @@ public class UserCreateDTO {
     @NotEmpty(message = "Last name can't be null or empty.")
     private String lastName;
 
+    @NotNull(message = "Password can't be null.")
+    private String password;
+
     @NotNull(message = "User role can't be null.")
     private UserRole userRole;
 }

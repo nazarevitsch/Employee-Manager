@@ -6,12 +6,6 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd"
 >
 
-    <changeSet id="create-uuid-extension" author="nazarii">
-        <sql>
-            create extension if not exists "uuid-ossp"
-        </sql>
-    </changeSet>
-
     <changeSet id="create_enum_type_user_role" author="nazar">
         <sql>
             drop type if exists user_role cascade;
@@ -35,8 +29,7 @@
             <column name="u_last_name" type="varchar(25)"/>
             <column name="u_creation_date" type="timestamp"/>
             <column name="u_organization_id" type="uuid"/>
-            <column name="u_is_deleted" type="bool" defaultValue="false"/>
-            <column name="u_is_active" type="bool"/>
+            <column name="u_is_active" type="bool" defaultValue="true"/>
             <column name="u_user_role" type="user_role"/>
         </createTable>
     </changeSet>

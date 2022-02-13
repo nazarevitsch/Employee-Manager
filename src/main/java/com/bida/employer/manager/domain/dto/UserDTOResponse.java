@@ -15,6 +15,5 @@ public class UserDTOResponse {
     private UUID organizationId;
     private LocalDateTime creationDate;
     private boolean isActive;
-    private boolean isDeleted;
     private UserRole userRole;
 }

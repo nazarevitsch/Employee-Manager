@@ -29,7 +29,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -40,7 +39,7 @@ public class UserService implements UserDetailsService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private PasswordRecoveryRepository restorePasswordRepository;
+    private PasswordRecoveryRepository passwordRecoveryRepository;
     @Autowired
     private JWTUtilService jwtUtilService;
     @Autowired
@@ -59,48 +58,26 @@ public class UserService implements UserDetailsService {
 
     public List<UserDTOResponse> getAllUsersOfCurrentOrganization() {
         MyUserDetails userDetails =((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-        validateUserAccess(userDetails.getUser());
+        validateActiveUser(userDetails.getUser());
 
-        List<User> users = userRepository.findAllByOrganizationId(userDetails.getUser().getOrganizationId());
+        List<User> users = null;
 
-        // TODO:: migrate filtering to DB level
         if (userDetails.getUser().getUserRole().equals(UserRole.EMPLOYEE)){
-            return userMapper.entityToDto(users.stream().filter(user -> user.isActive() && !user.isDeleted()).collect(Collectors.toList()));
+            users = userRepository.findOnlyActiveUsersByOrganizationId(userDetails.getUser().getOrganizationId());
+        } else {
+            users = userRepository.findAllByOrganizationId(userDetails.getUser().getOrganizationId());
         }
+
         return userMapper.entityToDto(users);
-    }
-
-    public UserDTOResponse deleteUser(UUID userId) {
-        MyUserDetails userDetails =((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-        validateUserAccess(userDetails.getUser());
-
-        User user = findUserById(userId);
-
-        if (user.getUserRole().equals(UserRole.OWNER)) {
-            throw new BadRequestException("You can't delete OWNER.");
-        }
-        if (user.getId().equals(userDetails.getUser().getId())) {
-            throw new BadRequestException("You can't delete yourself.");
-        }
-        if (!user.getOrganizationId().equals(userDetails.getUser().getOrganizationId())) {
-            throw new BadRequestException("User with id: " + userId + " is from another organization.");
-        }
-        if (user.isDeleted()) {
-            throw new BadRequestException("User with id: " + userId + " is deleted.");
-        }
-
-        userRepository.deleteById(userId);
-        user.setDeleted(true);
-
-        return userMapper.entityToDto(user);
     }
 
     public UserDTOResponse create(UserCreateDTO userDTO) {
         MyUserDetails userDetails =((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-        validateUserAccess(userDetails.getUser());
+        validateActiveUser(userDetails.getUser());
 
         validator.validateEmail(userDTO.getEmail());
         validator.validatePhoneNumber(userDTO.getPhoneNumber());
+        validator.validatePassword(userDTO.getPassword(), userDTO.getEmail());
         if (userRepository.findUserByEmail(userDTO.getEmail()) != null) {
             throw new BadRequestException("User with email: " + userDTO.getEmail() + " is already existed.");
         }
@@ -121,9 +98,8 @@ public class UserService implements UserDetailsService {
         }
 
         User user = userMapper.dtoToEntity(userDTO);
-        user.setActive(false);
+        user.setActive(true);
         user.setOrganizationId(organizationId);
-        user.setPassword(passwordEncoder.encode(RandomStringUtils.randomAlphanumeric(22)));
 
         user = userRepository.save(user);
         return userMapper.entityToDto(user);
@@ -140,56 +116,52 @@ public class UserService implements UserDetailsService {
 
     public UserDTOResponse getUser(UUID userId) {
         MyUserDetails userDetails = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-        validateUserAccess(userDetails.getUser());
+        validateActiveUser(userDetails.getUser());
 
         User user = findUserById(userId);
 
         if (!user.getOrganizationId().equals(userDetails.getUser().getOrganizationId())) {
             throw new BadRequestException("User with id: " + userId + " is from another organization.");
         }
+        if (userDetails.getUser().getUserRole().equals(UserRole.EMPLOYEE)) {
+            validateActiveUser(user);
+        }
         return userMapper.entityToDto(user);
     }
 
-    public CheckUserDTOResponse checkUser(String email) {
-        User user = findUserByEmail(email);
-        if (!user.isActive()) {
-            passwordRecovery(user);
-        }
-        return userMapper.entityToCheckEmailDto(user);
-    }
-
-    public UserDTOResponse activate(ActivationDTO activation) {
+    public UserDTOResponse recoverPassword(PasswordRecoveryDTO activation) {
         User user = findUserById(activation.getUserId());
+        validateActiveUser(user);
 
-        PasswordRecovery restorePassword = Optional.ofNullable(restorePasswordRepository.findByUserId(activation.getUserId()))
+        PasswordRecovery passwordRecovery = Optional.ofNullable(passwordRecoveryRepository.findByUserId(activation.getUserId()))
                 .orElseThrow(() -> new NotFoundException("Password recovery for user: " + user.getId() + " wasn't initiated."));
 
-        if (restorePassword.getExpirationDate().isBefore(LocalDateTime.now())) {
-            restorePasswordRepository.deleteByUserId(user.getId());
+        if (passwordRecovery.getExpirationDate().isBefore(LocalDateTime.now())) {
+            passwordRecoveryRepository.deleteByUserId(user.getId());
             throw new BadRequestException("Activation code is expired.");
         }
-        if (!passwordEncoder.matches(activation.getToken(), restorePassword.getToken())) {
-            restorePasswordRepository.deleteByUserId(user.getId());
+        if (!passwordEncoder.matches(activation.getToken(), passwordRecovery.getToken())) {
+            passwordRecoveryRepository.deleteByUserId(user.getId());
             throw new BadRequestException("Wrong activation token!");
         }
 
         validator.validatePassword(activation.getPassword(), user.getEmail());
         userRepository.setNewPassword(user.getId(), passwordEncoder.encode(activation.getPassword()));
-        restorePasswordRepository.deleteByUserId(user.getId());
+        passwordRecoveryRepository.deleteByUserId(user.getId());
 
-        user.setActive(true);
         return userMapper.entityToDto(user);
     }
 
     public TokenDTOResponse login(UserLoginDTO userLogin, HttpServletResponse response) {
-        MyUserDetails userDetails = (MyUserDetails) loadUserByUsername(userLogin.getEmail());
-        validateUserAccess(userDetails.getUser());
-
+        MyUserDetails userDetails = null;
         try {
+            userDetails = (MyUserDetails) loadUserByUsername(userLogin.getEmail());
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userLogin.getEmail(), userLogin.getPassword()));
         } catch (Exception e) {
             throw new BadRequestException("Email or Password are wrong!");
         }
+
+        validateActiveUser(userDetails.getUser());
 
         Cookie cookie = new Cookie("refreshToken", generateRefreshToken(userDetails));
         cookie.setPath("/");
@@ -211,7 +183,7 @@ public class UserService implements UserDetailsService {
 
     public UserDTOResponse changePassword(ChangePasswordDTO changePassword) {
         User user = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
-        validateUserAccess(user);
+        validateActiveUser(user);
 
         if (!passwordEncoder.matches(changePassword.getOldPassword(), user.getPassword())) {
             throw new BadRequestException("Old password is wrong!");
@@ -226,10 +198,34 @@ public class UserService implements UserDetailsService {
         return userMapper.entityToDto(userRepository.save(user));
     }
 
-    public void passwordRecovery(String email) {
-        User user = findUserByEmail(email);
-        validateUserAccess(user);
+    public void passwordRecovery(InitiatePasswordRecoveryDTO initiatePasswordRecovery) {
+        User user = findUserByEmail(initiatePasswordRecovery.getEmail());
+        validateActiveUser(user);
         passwordRecovery(user);
+    }
+
+    public UserDTOResponse changeActiveState(ActiveStateDTO activeStateDTO) {
+        User user = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+
+        if (user.getId().equals(activeStateDTO.getUserId())) {
+            throw new BadRequestException("You can't activate / deactivate yourself!");
+        }
+
+        User userToChangeActive = findUserById(activeStateDTO.getUserId());
+        if (!user.getOrganizationId().equals(userToChangeActive.getOrganizationId())) {
+            throw new BadRequestException("You can't change active state of user from another organization.");
+        }
+        if (user.getUserRole().equals(UserRole.ADMINISTRATOR) && userToChangeActive.getUserRole().equals(UserRole.OWNER)) {
+            throw new BadRequestException("You can't activate / deactivate OWNER!");
+        }
+        if (userToChangeActive.isActive() == activeStateDTO.getActive()) {
+            throw new BadRequestException("User with id: " + activeStateDTO.getUserId() + " is already " + (userToChangeActive.isActive() ? " active." : "inactive."));
+        }
+
+        userRepository.setActiveStateByUserId(activeStateDTO.getUserId(), activeStateDTO.getActive());
+
+        userToChangeActive.setActive(activeStateDTO.getActive());
+        return userMapper.entityToDto(userToChangeActive);
     }
 
     public void ownerCreationValidation(UserRegistrationDTO userDTO) {
@@ -255,17 +251,17 @@ public class UserService implements UserDetailsService {
     }
 
     public void passwordRecovery(User user) {
-        restorePasswordRepository.deleteByUserId(user.getId());
+        passwordRecoveryRepository.deleteByUserId(user.getId());
 
         String activationToken = RandomStringUtils.randomAlphanumeric(25);
         String activationTokenEncoded = passwordEncoder.encode(activationToken);
 
-        PasswordRecovery restorePassword = new PasswordRecovery();
-        restorePassword.setToken(activationTokenEncoded);
-        restorePassword.setExpirationDate(LocalDateTime.now().plusHours(3));
-        restorePassword.setUserId(user.getId());
+        PasswordRecovery passwordRecovery = new PasswordRecovery();
+        passwordRecovery.setToken(activationTokenEncoded);
+        passwordRecovery.setExpirationDate(LocalDateTime.now().plusHours(3));
+        passwordRecovery.setUserId(user.getId());
 
-        restorePasswordRepository.save(restorePassword);
+        passwordRecoveryRepository.save(passwordRecovery);
 
         // TODO: Refactor sending emails
         emailNotificationService.sendMessage(user.getEmail(), "Password recovery",
@@ -276,7 +272,7 @@ public class UserService implements UserDetailsService {
     }
 
     public void cancelPasswordRecovery(UUID userId) {
-        restorePasswordRepository.deleteByUserId(userId);
+        passwordRecoveryRepository.deleteByUserId(userId);
     }
 
     @Override
@@ -284,12 +280,9 @@ public class UserService implements UserDetailsService {
         return new MyUserDetails(findUserByEmail(s));
     }
 
-    public void validateUserAccess(User user) {
+    public void validateActiveUser(User user) {
         if (!user.isActive()) {
             throw new BadRequestException("User with email: " + user.getId() + " is inactive.");
-        }
-        if (user.isDeleted()) {
-            throw new BadRequestException("User with email: " + user.getId() + " is deleted.");
         }
     }
 }

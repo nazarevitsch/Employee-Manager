@@ -5,7 +5,13 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd"
 >
-    <changeSet id="create_enum_type_organization_type" author="nazar">
+    <changeSet id="create-uuid-extension" author="nazarii">
+        <sql>
+            create extension if not exists "uuid-ossp"
+        </sql>
+    </changeSet>
+
+    <changeSet id="create_enum_type_organization_type" author="nazarii">
         <sql>
             drop type if exists organization_type cascade;
             create type organization_type as enum('SMALL', 'MIDDLE', 'LARGE');

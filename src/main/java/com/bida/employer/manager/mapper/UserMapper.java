@@ -1,7 +1,6 @@
 package com.bida.employer.manager.mapper;
 
 import com.bida.employer.manager.domain.User;
-import com.bida.employer.manager.domain.dto.CheckUserDTOResponse;
 import com.bida.employer.manager.domain.dto.UserCreateDTO;
 import com.bida.employer.manager.domain.dto.UserDTOResponse;
 import com.bida.employer.manager.domain.dto.UserRegistrationDTO;
@@ -20,10 +19,6 @@ public class UserMapper {
     public UserMapper() {
         modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-    }
-
-    public CheckUserDTOResponse entityToCheckEmailDto(User user) {
-        return modelMapper.map(user, CheckUserDTOResponse.class);
     }
 
     public User dtoToEntity(UserCreateDTO userDTO) {

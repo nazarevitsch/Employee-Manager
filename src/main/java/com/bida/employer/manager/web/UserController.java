@@ -20,6 +20,7 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+//    TESTED
     @PostMapping("/login")
     public ResponseEntity<TokenDTOResponse> login(@Valid @RequestBody UserLoginDTO userDTO, HttpServletResponse response) {
         return new ResponseEntity<>(userService.login(userDTO, response), HttpStatus.OK);
@@ -30,6 +31,7 @@ public class UserController {
         return new ResponseEntity<>(userService.generateAccessToken(token), HttpStatus.OK);
     }
 
+//    TESTED
     @PostMapping("/password")
     public ResponseEntity<UserDTOResponse> changePassword(@Valid @RequestBody ChangePasswordDTO changePassword) {
         return new ResponseEntity<>(userService.changePassword(changePassword), HttpStatus.OK);
@@ -51,9 +53,9 @@ public class UserController {
         return new ResponseEntity<>(userService.create(userDTO), HttpStatus.CREATED);
     }
 
-    @DeleteMapping
+    @PatchMapping("/active")
     @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
-    public ResponseEntity<UserDTOResponse> deleteUser(@RequestParam("id") UUID id) {
-        return new ResponseEntity<>(userService.deleteUser(id), HttpStatus.CREATED);
+    public ResponseEntity<UserDTOResponse> updateActiveState(@Valid @RequestBody ActiveStateDTO activeStateDTO) {
+        return new ResponseEntity<>(userService.changeActiveState(activeStateDTO), HttpStatus.OK);
     }
 }

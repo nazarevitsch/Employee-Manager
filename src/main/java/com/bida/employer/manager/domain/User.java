@@ -53,9 +53,6 @@ public class User {
     @Column(name = "u_creation_date")
     private LocalDateTime creationDate;
 
-    @Column(name = "u_is_deleted")
-    private boolean isDeleted;
-
     @Column(name = "u_is_active")
     private boolean isActive;
 

@@ -6,7 +6,7 @@ import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
 @Data
-public class ActivationDTO {
+public class PasswordRecoveryDTO {
 
     @NotNull(message = "Id can't be null.")
     private UUID userId;
