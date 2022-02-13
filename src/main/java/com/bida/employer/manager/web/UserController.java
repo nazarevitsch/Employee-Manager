@@ -37,11 +37,13 @@ public class UserController {
         return new ResponseEntity<>(userService.changePassword(changePassword), HttpStatus.OK);
     }
 
+//    TESTED
     @GetMapping
     public ResponseEntity<List<UserDTOResponse>> getAllUsers() {
         return new ResponseEntity<>(userService.getAllUsersOfCurrentOrganization(), HttpStatus.OK);
     }
 
+//    TESTED
     @GetMapping(value = "/{id}")
     public ResponseEntity<UserDTOResponse> getUser(@PathVariable("id") UUID userId) {
         return new ResponseEntity<>(userService.getUser(userId), HttpStatus.OK);
