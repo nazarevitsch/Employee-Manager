@@ -204,6 +204,47 @@ public class UserService implements UserDetailsService {
         passwordRecovery(user);
     }
 
+    public UserDTOResponse updateUser(UUID userId, UpdateUserDTO updateUserDTO) {
+        User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        validateActiveUser(currentUser);
+
+        User userToUpdate = findUserById(userId);
+
+        if (!currentUser.getOrganizationId().equals(userToUpdate.getOrganizationId())) {
+            throw new BadRequestException("User with id: " + userId + " is from another organization!");
+        }
+        if (currentUser.getUserRole().equals(UserRole.EMPLOYEE) && (userToUpdate.getUserRole().equals(UserRole.ADMINISTRATOR) || userToUpdate.getUserRole().equals(UserRole.OWNER))) {
+            throw new BadRequestException("You can't update this user!");
+        }
+        if (currentUser.getUserRole().equals(UserRole.ADMINISTRATOR) && (userToUpdate.getUserRole().equals(UserRole.ADMINISTRATOR) || userToUpdate.getUserRole().equals(UserRole.OWNER))) {
+//            This for case when admin want to update itself
+            if (!currentUser.getId().equals(userToUpdate.getId())) {
+                throw new BadRequestException("You can't update this user!");
+            }
+        }
+        if (!updateUserDTO.getEmail().equals(userToUpdate.getEmail())) {
+            validator.validateEmail(updateUserDTO.getEmail());
+            if (userRepository.findUserByEmail(updateUserDTO.getEmail()) != null) {
+                throw new BadRequestException("User with email: " + updateUserDTO.getEmail() + " is already existed.");
+            }
+            userToUpdate.setPhoneNumber(updateUserDTO.getPhoneNumber());
+        }
+
+        if (!updateUserDTO.getPhoneNumber().equals(userToUpdate.getPhoneNumber())) {
+            validator.validatePhoneNumber(updateUserDTO.getPhoneNumber());
+            if (userRepository.findUserByPhoneNumber(updateUserDTO.getPhoneNumber()) != null) {
+                throw new BadRequestException("User with phone number: " + updateUserDTO.getPhoneNumber() + " is already existed.");
+            }
+            userToUpdate.setEmail(updateUserDTO.getEmail());
+        }
+
+        userToUpdate.setFirstName(updateUserDTO.getFirstName());
+        userToUpdate.setLastName(updateUserDTO.getLastName());
+        User updatedUser = userRepository.save(userToUpdate);
+
+        return userMapper.entityToDto(updatedUser);
+    }
+
     public UserDTOResponse changeActiveState(ActiveStateDTO activeStateDTO) {
         User user = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
 
@@ -220,6 +261,13 @@ public class UserService implements UserDetailsService {
         }
         if (userToChangeActive.isActive() == activeStateDTO.getActive()) {
             throw new BadRequestException("User with id: " + activeStateDTO.getUserId() + " is already " + (userToChangeActive.isActive() ? " active." : "inactive."));
+        }
+
+        UUID organizationId = user.getOrganizationId();
+        Organization organization = organizationService.isOrganizationActive(organizationId);
+        int employeeCount = userRepository.countEmployersByOrganizationId(organizationId);
+        if (employeeCount >= organization.getOrganizationType().getSize() && activeStateDTO.getActive()) {
+            throw new BadRequestException("Organization with id: " + organizationId + " has max size.");
         }
 
         userRepository.setActiveStateByUserId(activeStateDTO.getUserId(), activeStateDTO.getActive());

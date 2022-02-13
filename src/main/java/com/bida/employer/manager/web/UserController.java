@@ -32,7 +32,7 @@ public class UserController {
     }
 
 //    TESTED
-    @PostMapping("/password")
+    @PatchMapping("/password")
     public ResponseEntity<UserDTOResponse> changePassword(@Valid @RequestBody ChangePasswordDTO changePassword) {
         return new ResponseEntity<>(userService.changePassword(changePassword), HttpStatus.OK);
     }
@@ -51,6 +51,12 @@ public class UserController {
     @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
     public ResponseEntity<UserDTOResponse> createUser(@Valid @RequestBody UserCreateDTO userDTO) {
         return new ResponseEntity<>(userService.create(userDTO), HttpStatus.CREATED);
+    }
+
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<UserDTOResponse> updateUser(@Valid @RequestBody UpdateUserDTO updateUserDTO,
+                                                      @PathVariable("id") UUID userId) {
+        return new ResponseEntity<>(userService.updateUser(userId, updateUserDTO), HttpStatus.OK);
     }
 
     @PatchMapping("/active")
