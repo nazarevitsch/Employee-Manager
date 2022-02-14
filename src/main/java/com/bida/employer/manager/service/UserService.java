@@ -100,6 +100,7 @@ public class UserService implements UserDetailsService {
         User user = userMapper.dtoToEntity(userDTO);
         user.setActive(true);
         user.setOrganizationId(organizationId);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         user = userRepository.save(user);
         return userMapper.entityToDto(user);
@@ -260,7 +261,7 @@ public class UserService implements UserDetailsService {
             throw new BadRequestException("You can't activate / deactivate OWNER!");
         }
         if (userToChangeActive.isActive() == activeStateDTO.getActive()) {
-            throw new BadRequestException("User with id: " + activeStateDTO.getUserId() + " is already " + (userToChangeActive.isActive() ? " active." : "inactive."));
+            throw new BadRequestException("User with id: " + activeStateDTO.getUserId() + " is already " + (userToChangeActive.isActive() ? "active." : "inactive."));
         }
 
         UUID organizationId = user.getOrganizationId();

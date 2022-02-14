@@ -49,11 +49,13 @@ public class UserController {
         return new ResponseEntity<>(userService.getUser(userId), HttpStatus.OK);
     }
 
+//    TESTED
     @PostMapping
     @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
     public ResponseEntity<UserDTOResponse> createUser(@Valid @RequestBody UserCreateDTO userDTO) {
         return new ResponseEntity<>(userService.create(userDTO), HttpStatus.CREATED);
     }
+
 
     @PutMapping(value = "/{id}")
     public ResponseEntity<UserDTOResponse> updateUser(@Valid @RequestBody UpdateUserDTO updateUserDTO,
@@ -61,6 +63,7 @@ public class UserController {
         return new ResponseEntity<>(userService.updateUser(userId, updateUserDTO), HttpStatus.OK);
     }
 
+//    TESTED
     @PatchMapping("/active")
     @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
     public ResponseEntity<UserDTOResponse> updateActiveState(@Valid @RequestBody ActiveStateDTO activeStateDTO) {

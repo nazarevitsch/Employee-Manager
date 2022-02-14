@@ -23,7 +23,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query(value = "select * from users where u_organization_id = :organizationId and u_is_active = true", nativeQuery = true)
     List<User> findOnlyActiveUsersByOrganizationId(@Param("organizationId") UUID organizationId);
 
-    @Query(value = "select count(*) from users where u_organization_id = :organizationId", nativeQuery = true)
+    @Query(value = "select count(*) from users where u_organization_id = :organizationId and u_is_active = true", nativeQuery = true)
     int countEmployersByOrganizationId(@Param("organizationId") UUID organizationId);
 
     @Query(value = "update users set u_password = :newPassword where u_id = :userId", nativeQuery = true)
