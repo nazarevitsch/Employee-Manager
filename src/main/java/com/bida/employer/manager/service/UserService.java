@@ -228,7 +228,7 @@ public class UserService implements UserDetailsService {
             if (userRepository.findUserByEmail(updateUserDTO.getEmail()) != null) {
                 throw new BadRequestException("User with email: " + updateUserDTO.getEmail() + " is already existed.");
             }
-            userToUpdate.setPhoneNumber(updateUserDTO.getPhoneNumber());
+            userToUpdate.setEmail(updateUserDTO.getEmail());
         }
 
         if (!updateUserDTO.getPhoneNumber().equals(userToUpdate.getPhoneNumber())) {
@@ -236,7 +236,7 @@ public class UserService implements UserDetailsService {
             if (userRepository.findUserByPhoneNumber(updateUserDTO.getPhoneNumber()) != null) {
                 throw new BadRequestException("User with phone number: " + updateUserDTO.getPhoneNumber() + " is already existed.");
             }
-            userToUpdate.setEmail(updateUserDTO.getEmail());
+            userToUpdate.setPhoneNumber(updateUserDTO.getPhoneNumber());
         }
 
         userToUpdate.setFirstName(updateUserDTO.getFirstName());
