@@ -20,7 +20,6 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-//    TESTED
     @PostMapping("/login")
     public ResponseEntity<TokenDTOResponse> login(@Valid @RequestBody UserLoginDTO userDTO, HttpServletResponse response) {
         return new ResponseEntity<>(userService.login(userDTO, response), HttpStatus.OK);
@@ -31,46 +30,39 @@ public class UserController {
         return new ResponseEntity<>(userService.generateAccessToken(token), HttpStatus.OK);
     }
 
-//    TESTED
     @PatchMapping("/password")
     public ResponseEntity<UserDTOResponse> patchPassword(@Valid @RequestBody ChangePasswordDTO changePassword) {
         return new ResponseEntity<>(userService.changePassword(changePassword), HttpStatus.OK);
     }
 
-//    TESTED
     @GetMapping
     public ResponseEntity<List<UserDTOResponse>> getAllUsers() {
         return new ResponseEntity<>(userService.getAllUsersOfCurrentOrganization(), HttpStatus.OK);
     }
 
-//    TESTED
     @GetMapping(value = "/{id}")
     public ResponseEntity<UserDTOResponse> getUser(@PathVariable("id") UUID userId) {
         return new ResponseEntity<>(userService.getUser(userId), HttpStatus.OK);
     }
 
-//    TESTED
     @PostMapping
     @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
     public ResponseEntity<UserDTOResponse> createUser(@Valid @RequestBody UserCreateDTO userDTO) {
         return new ResponseEntity<>(userService.create(userDTO), HttpStatus.CREATED);
     }
 
-//    TESTED
     @PutMapping(value = "/{id}")
     public ResponseEntity<UserDTOResponse> updateUser(@Valid @RequestBody UpdateUserDTO updateUserDTO,
                                                       @PathVariable("id") UUID userId) {
         return new ResponseEntity<>(userService.updateUser(userId, updateUserDTO), HttpStatus.OK);
     }
 
-//    TESTED
     @PatchMapping("/userRole")
     @PreAuthorize("hasAuthority('OWNER')")
     public ResponseEntity<UserDTOResponse> patchUserRole(@Valid @RequestBody UserRoleDTO userRoleDTO) {
         return new ResponseEntity<>(userService.updateUserRole(userRoleDTO), HttpStatus.OK);
     }
 
-//    TESTED
     @PatchMapping("/active")
     @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
     public ResponseEntity<UserDTOResponse> patchActiveState(@Valid @RequestBody ActiveStateDTO activeStateDTO) {

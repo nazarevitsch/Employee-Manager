@@ -57,23 +57,18 @@ public class UserService implements UserDetailsService {
 
 
     public List<UserDTOResponse> getAllUsersOfCurrentOrganization() {
-        MyUserDetails userDetails =((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-        validateActiveUser(userDetails.getUser());
+        User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        validateActiveUser(currentUser);
 
-        List<User> users = null;
-
-        if (userDetails.getUser().getUserRole().equals(UserRole.EMPLOYEE)){
-            users = userRepository.findOnlyActiveUsersByOrganizationId(userDetails.getUser().getOrganizationId());
-        } else {
-            users = userRepository.findAllByOrganizationId(userDetails.getUser().getOrganizationId());
+        if (currentUser.getUserRole().equals(UserRole.EMPLOYEE)){
+            return userMapper.entityToDto(userRepository.findOnlyActiveUsersByOrganizationId(currentUser.getOrganizationId()));
         }
-
-        return userMapper.entityToDto(users);
+        return userMapper.entityToDto(userRepository.findAllByOrganizationId(currentUser.getOrganizationId()));
     }
 
     public UserDTOResponse create(UserCreateDTO userDTO) {
-        MyUserDetails userDetails =((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-        validateActiveUser(userDetails.getUser());
+        User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        validateActiveUser(currentUser);
 
         validator.validateEmail(userDTO.getEmail());
         validator.validatePhoneNumber(userDTO.getPhoneNumber());
@@ -85,14 +80,13 @@ public class UserService implements UserDetailsService {
             throw new BadRequestException("User with phone number: " + userDTO.getPhoneNumber() + " is already existed!");
         }
 
-        UUID organizationId = userDetails.getUser().getOrganizationId();
+        UUID organizationId = currentUser.getOrganizationId();
         Organization organization = organizationService.isOrganizationActive(organizationId);
 
         int count = userRepository.countEmployersByOrganizationId(organizationId);
         if (count >= organization.getOrganizationType().getSize()) {
             throw new BadRequestException("Organization with id: " + organizationId + " has max size!");
         }
-
         if (userDTO.getUserRole().equals(UserRole.OWNER) || userDTO.getUserRole().equals(UserRole.INTERNAL_ADMINISTRATOR)) {
             throw new BadRequestException("Owner can't be created!");
         }
@@ -116,15 +110,15 @@ public class UserService implements UserDetailsService {
     }
 
     public UserDTOResponse getUser(UUID userId) {
-        MyUserDetails userDetails = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-        validateActiveUser(userDetails.getUser());
+        User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        validateActiveUser(currentUser);
 
         User user = findUserById(userId);
 
-        if (!user.getOrganizationId().equals(userDetails.getUser().getOrganizationId())) {
+        if (!user.getOrganizationId().equals(currentUser.getOrganizationId())) {
             throw new BadRequestException("User with id: " + userId + " is from another organization!");
         }
-        if (userDetails.getUser().getUserRole().equals(UserRole.EMPLOYEE)) {
+        if (currentUser.getUserRole().equals(UserRole.EMPLOYEE)) {
             validateActiveUser(user);
         }
         return userMapper.entityToDto(user);
@@ -147,9 +141,8 @@ public class UserService implements UserDetailsService {
         }
 
         validator.validatePassword(activation.getPassword(), user.getEmail());
-        userRepository.setNewPassword(user.getId(), passwordEncoder.encode(activation.getPassword()));
+        user.setPassword(passwordEncoder.encode(activation.getPassword()));
         passwordRecoveryRepository.deleteByUserId(user.getId());
-
         return userMapper.entityToDto(user);
     }
 
@@ -183,20 +176,20 @@ public class UserService implements UserDetailsService {
     }
 
     public UserDTOResponse changePassword(ChangePasswordDTO changePassword) {
-        User user = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
-        validateActiveUser(user);
+        User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        validateActiveUser(currentUser);
 
-        if (!passwordEncoder.matches(changePassword.getOldPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(changePassword.getOldPassword(), currentUser.getPassword())) {
             throw new BadRequestException("Old password is wrong!");
         }
-        if (passwordEncoder.matches(changePassword.getNewPassword(), user.getPassword())) {
+        if (passwordEncoder.matches(changePassword.getNewPassword(), currentUser.getPassword())) {
             throw new BadRequestException("Old password and the new one are same!");
         }
 
-        validator.validatePassword(changePassword.getNewPassword(), user.getEmail());
-        user.setPassword(passwordEncoder.encode(changePassword.getNewPassword()));
+        validator.validatePassword(changePassword.getNewPassword(), currentUser.getEmail());
+        currentUser.setPassword(passwordEncoder.encode(changePassword.getNewPassword()));
 
-        return userMapper.entityToDto(userRepository.save(user));
+        return userMapper.entityToDto(userRepository.save(currentUser));
     }
 
     public void passwordRecovery(InitiatePasswordRecoveryDTO initiatePasswordRecovery) {
@@ -223,7 +216,6 @@ public class UserService implements UserDetailsService {
             }
         }
         if (currentUser.getUserRole().equals(UserRole.ADMINISTRATOR) && (userToUpdate.getUserRole().equals(UserRole.ADMINISTRATOR) || userToUpdate.getUserRole().equals(UserRole.OWNER))) {
-//            This for case when admin want to update itself
             if (!currentUser.getId().equals(userId)) {
                 throw new BadRequestException("You can't update this user!");
             }
@@ -252,34 +244,35 @@ public class UserService implements UserDetailsService {
     }
 
     public UserDTOResponse changeActiveState(ActiveStateDTO activeStateDTO) {
-        User user = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        validateActiveUser(currentUser);
 
-        if (user.getId().equals(activeStateDTO.getUserId())) {
+        if (currentUser.getId().equals(activeStateDTO.getUserId())) {
             throw new BadRequestException("You can't activate / deactivate yourself!");
         }
 
         User userToChangeActive = findUserById(activeStateDTO.getUserId());
-        if (!user.getOrganizationId().equals(userToChangeActive.getOrganizationId())) {
+        if (!currentUser.getOrganizationId().equals(userToChangeActive.getOrganizationId())) {
             throw new BadRequestException("You can't change active state of user from another organization!");
         }
-        if (user.getUserRole().equals(UserRole.ADMINISTRATOR) && userToChangeActive.getUserRole().equals(UserRole.OWNER)) {
+        if (currentUser.getUserRole().equals(UserRole.ADMINISTRATOR) && userToChangeActive.getUserRole().equals(UserRole.OWNER)) {
             throw new BadRequestException("You can't activate / deactivate OWNER!");
         }
         if (userToChangeActive.isActive() == activeStateDTO.getActive()) {
             throw new BadRequestException("User with id: " + activeStateDTO.getUserId() + " is already " + (userToChangeActive.isActive() ? "active!" : "inactive!"));
         }
 
-        UUID organizationId = user.getOrganizationId();
+        UUID organizationId = currentUser.getOrganizationId();
         Organization organization = organizationService.isOrganizationActive(organizationId);
         int employeeCount = userRepository.countEmployersByOrganizationId(organizationId);
         if (employeeCount >= organization.getOrganizationType().getSize() && activeStateDTO.getActive()) {
             throw new BadRequestException("Organization with id: " + organizationId + " has max size!");
         }
 
-        userRepository.setActiveStateByUserId(activeStateDTO.getUserId(), activeStateDTO.getActive());
-
         userToChangeActive.setActive(activeStateDTO.getActive());
-        return userMapper.entityToDto(userToChangeActive);
+        User newUser = userRepository.save(userToChangeActive);
+
+        return userMapper.entityToDto(newUser);
     }
 
     public UserDTOResponse updateUserRole(UserRoleDTO userRoleDTO){
