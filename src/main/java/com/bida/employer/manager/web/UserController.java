@@ -56,7 +56,7 @@ public class UserController {
         return new ResponseEntity<>(userService.create(userDTO), HttpStatus.CREATED);
     }
 
-
+//    TESTED
     @PutMapping(value = "/{id}")
     public ResponseEntity<UserDTOResponse> updateUser(@Valid @RequestBody UpdateUserDTO updateUserDTO,
                                                       @PathVariable("id") UUID userId) {

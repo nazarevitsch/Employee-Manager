@@ -214,12 +214,17 @@ public class UserService implements UserDetailsService {
         if (!currentUser.getOrganizationId().equals(userToUpdate.getOrganizationId())) {
             throw new BadRequestException("User with id: " + userId + " is from another organization!");
         }
-        if (currentUser.getUserRole().equals(UserRole.EMPLOYEE) && (userToUpdate.getUserRole().equals(UserRole.ADMINISTRATOR) || userToUpdate.getUserRole().equals(UserRole.OWNER))) {
-            throw new BadRequestException("You can't update this user!");
+        if (currentUser.getUserRole().equals(UserRole.EMPLOYEE)) {
+            if (userToUpdate.getUserRole().equals(UserRole.ADMINISTRATOR) || userToUpdate.getUserRole().equals(UserRole.OWNER)) {
+                throw new BadRequestException("You can't update this user!");
+            }
+            if (!currentUser.getId().equals(userId)) {
+                throw new BadRequestException("You can't update this user!");
+            }
         }
         if (currentUser.getUserRole().equals(UserRole.ADMINISTRATOR) && (userToUpdate.getUserRole().equals(UserRole.ADMINISTRATOR) || userToUpdate.getUserRole().equals(UserRole.OWNER))) {
 //            This for case when admin want to update itself
-            if (!currentUser.getId().equals(userToUpdate.getId())) {
+            if (!currentUser.getId().equals(userId)) {
                 throw new BadRequestException("You can't update this user!");
             }
         }
