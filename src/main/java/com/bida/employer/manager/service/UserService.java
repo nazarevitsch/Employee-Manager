@@ -79,10 +79,10 @@ public class UserService implements UserDetailsService {
         validator.validatePhoneNumber(userDTO.getPhoneNumber());
         validator.validatePassword(userDTO.getPassword(), userDTO.getEmail());
         if (userRepository.findUserByEmail(userDTO.getEmail()) != null) {
-            throw new BadRequestException("User with email: " + userDTO.getEmail() + " is already existed.");
+            throw new BadRequestException("User with email: " + userDTO.getEmail() + " is already existed!");
         }
         if (userRepository.findUserByPhoneNumber(userDTO.getPhoneNumber()) != null) {
-            throw new BadRequestException("User with phone number: " + userDTO.getPhoneNumber() + " is already existed.");
+            throw new BadRequestException("User with phone number: " + userDTO.getPhoneNumber() + " is already existed!");
         }
 
         UUID organizationId = userDetails.getUser().getOrganizationId();
@@ -90,11 +90,11 @@ public class UserService implements UserDetailsService {
 
         int count = userRepository.countEmployersByOrganizationId(organizationId);
         if (count >= organization.getOrganizationType().getSize()) {
-            throw new BadRequestException("Organization with id: " + organizationId + " has max size.");
+            throw new BadRequestException("Organization with id: " + organizationId + " has max size!");
         }
 
         if (userDTO.getUserRole().equals(UserRole.OWNER) || userDTO.getUserRole().equals(UserRole.INTERNAL_ADMINISTRATOR)) {
-            throw new BadRequestException("Owner can't be created");
+            throw new BadRequestException("Owner can't be created!");
         }
 
         User user = userMapper.dtoToEntity(userDTO);
@@ -122,7 +122,7 @@ public class UserService implements UserDetailsService {
         User user = findUserById(userId);
 
         if (!user.getOrganizationId().equals(userDetails.getUser().getOrganizationId())) {
-            throw new BadRequestException("User with id: " + userId + " is from another organization.");
+            throw new BadRequestException("User with id: " + userId + " is from another organization!");
         }
         if (userDetails.getUser().getUserRole().equals(UserRole.EMPLOYEE)) {
             validateActiveUser(user);
@@ -135,11 +135,11 @@ public class UserService implements UserDetailsService {
         validateActiveUser(user);
 
         PasswordRecovery passwordRecovery = Optional.ofNullable(passwordRecoveryRepository.findByUserId(activation.getUserId()))
-                .orElseThrow(() -> new NotFoundException("Password recovery for user: " + user.getId() + " wasn't initiated."));
+                .orElseThrow(() -> new NotFoundException("Password recovery for user: " + user.getId() + " wasn't initiated!"));
 
         if (passwordRecovery.getExpirationDate().isBefore(LocalDateTime.now())) {
             passwordRecoveryRepository.deleteByUserId(user.getId());
-            throw new BadRequestException("Activation code is expired.");
+            throw new BadRequestException("Activation code is expired!");
         }
         if (!passwordEncoder.matches(activation.getToken(), passwordRecovery.getToken())) {
             passwordRecoveryRepository.deleteByUserId(user.getId());
@@ -231,7 +231,7 @@ public class UserService implements UserDetailsService {
         if (!updateUserDTO.getEmail().equals(userToUpdate.getEmail())) {
             validator.validateEmail(updateUserDTO.getEmail());
             if (userRepository.findUserByEmail(updateUserDTO.getEmail()) != null) {
-                throw new BadRequestException("User with email: " + updateUserDTO.getEmail() + " is already existed.");
+                throw new BadRequestException("User with email: " + updateUserDTO.getEmail() + " is already existed!");
             }
             userToUpdate.setEmail(updateUserDTO.getEmail());
         }
@@ -239,7 +239,7 @@ public class UserService implements UserDetailsService {
         if (!updateUserDTO.getPhoneNumber().equals(userToUpdate.getPhoneNumber())) {
             validator.validatePhoneNumber(updateUserDTO.getPhoneNumber());
             if (userRepository.findUserByPhoneNumber(updateUserDTO.getPhoneNumber()) != null) {
-                throw new BadRequestException("User with phone number: " + updateUserDTO.getPhoneNumber() + " is already existed.");
+                throw new BadRequestException("User with phone number: " + updateUserDTO.getPhoneNumber() + " is already existed!");
             }
             userToUpdate.setPhoneNumber(updateUserDTO.getPhoneNumber());
         }
@@ -260,20 +260,20 @@ public class UserService implements UserDetailsService {
 
         User userToChangeActive = findUserById(activeStateDTO.getUserId());
         if (!user.getOrganizationId().equals(userToChangeActive.getOrganizationId())) {
-            throw new BadRequestException("You can't change active state of user from another organization.");
+            throw new BadRequestException("You can't change active state of user from another organization!");
         }
         if (user.getUserRole().equals(UserRole.ADMINISTRATOR) && userToChangeActive.getUserRole().equals(UserRole.OWNER)) {
             throw new BadRequestException("You can't activate / deactivate OWNER!");
         }
         if (userToChangeActive.isActive() == activeStateDTO.getActive()) {
-            throw new BadRequestException("User with id: " + activeStateDTO.getUserId() + " is already " + (userToChangeActive.isActive() ? "active." : "inactive."));
+            throw new BadRequestException("User with id: " + activeStateDTO.getUserId() + " is already " + (userToChangeActive.isActive() ? "active!" : "inactive!"));
         }
 
         UUID organizationId = user.getOrganizationId();
         Organization organization = organizationService.isOrganizationActive(organizationId);
         int employeeCount = userRepository.countEmployersByOrganizationId(organizationId);
         if (employeeCount >= organization.getOrganizationType().getSize() && activeStateDTO.getActive()) {
-            throw new BadRequestException("Organization with id: " + organizationId + " has max size.");
+            throw new BadRequestException("Organization with id: " + organizationId + " has max size!");
         }
 
         userRepository.setActiveStateByUserId(activeStateDTO.getUserId(), activeStateDTO.getActive());
@@ -282,12 +282,38 @@ public class UserService implements UserDetailsService {
         return userMapper.entityToDto(userToChangeActive);
     }
 
+    public UserDTOResponse updateUserRole(UserRoleDTO userRoleDTO){
+        User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        validateActiveUser(currentUser);
+
+        if (currentUser.getId().equals(userRoleDTO.getUserId())) {
+            throw new BadRequestException("You can't change your user role!");
+        }
+        if (userRoleDTO.getUserRole().equals(UserRole.OWNER)) {
+            throw new BadRequestException("Organization can have only one OWNER!");
+        }
+
+        User userToChangeUserRole = findUserById(userRoleDTO.getUserId());
+        validateActiveUser(userToChangeUserRole);
+
+        if (!currentUser.getOrganizationId().equals(userToChangeUserRole.getOrganizationId())) {
+            throw new BadRequestException("You can't change role of user from another organization!");
+        }
+        if (userToChangeUserRole.getUserRole().equals(userRoleDTO.getUserRole())) {
+            throw new BadRequestException("User already has this role!");
+        }
+
+        userToChangeUserRole.setUserRole(userRoleDTO.getUserRole());
+        User newUser = userRepository.save(userToChangeUserRole);
+        return userMapper.entityToDto(newUser);
+    }
+
     public void ownerCreationValidation(UserRegistrationDTO userDTO) {
         if (userRepository.findUserByEmail(userDTO.getEmail()) != null) {
-            throw new BadRequestException("User with email: " + userDTO.getEmail() + " is already existed.");
+            throw new BadRequestException("User with email: " + userDTO.getEmail() + " is already existed!");
         }
         if (userRepository.findUserByPhoneNumber(userDTO.getPhoneNumber()) != null) {
-            throw new BadRequestException("User with phone number: " + userDTO.getPhoneNumber() + " is already existed.");
+            throw new BadRequestException("User with phone number: " + userDTO.getPhoneNumber() + " is already existed!");
         }
         validator.validateEmail(userDTO.getEmail());
         validator.validatePhoneNumber(userDTO.getPhoneNumber());
@@ -296,12 +322,12 @@ public class UserService implements UserDetailsService {
 
     public User findUserByEmail(String email) {
         return Optional.ofNullable(userRepository.findUserByEmail(email))
-                .orElseThrow(() -> new NotFoundException("User with email: " + email + " wasn't found."));
+                .orElseThrow(() -> new NotFoundException("User with email: " + email + " wasn't found!"));
     }
 
     public User findUserById(UUID id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("User with id: " + id + " doesn't exist."));
+                .orElseThrow(() -> new NotFoundException("User with id: " + id + " doesn't exist!"));
     }
 
     public void passwordRecovery(User user) {
@@ -336,7 +362,7 @@ public class UserService implements UserDetailsService {
 
     public void validateActiveUser(User user) {
         if (!user.isActive()) {
-            throw new BadRequestException("User with email: " + user.getId() + " is inactive.");
+            throw new BadRequestException("User with email: " + user.getId() + " is inactive!");
         }
     }
 }

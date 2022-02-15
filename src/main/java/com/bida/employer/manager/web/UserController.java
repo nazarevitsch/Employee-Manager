@@ -33,7 +33,7 @@ public class UserController {
 
 //    TESTED
     @PatchMapping("/password")
-    public ResponseEntity<UserDTOResponse> changePassword(@Valid @RequestBody ChangePasswordDTO changePassword) {
+    public ResponseEntity<UserDTOResponse> patchPassword(@Valid @RequestBody ChangePasswordDTO changePassword) {
         return new ResponseEntity<>(userService.changePassword(changePassword), HttpStatus.OK);
     }
 
@@ -64,9 +64,16 @@ public class UserController {
     }
 
 //    TESTED
+    @PatchMapping("/userRole")
+    @PreAuthorize("hasAuthority('OWNER')")
+    public ResponseEntity<UserDTOResponse> patchUserRole(@Valid @RequestBody UserRoleDTO userRoleDTO) {
+        return new ResponseEntity<>(userService.updateUserRole(userRoleDTO), HttpStatus.OK);
+    }
+
+//    TESTED
     @PatchMapping("/active")
     @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
-    public ResponseEntity<UserDTOResponse> updateActiveState(@Valid @RequestBody ActiveStateDTO activeStateDTO) {
+    public ResponseEntity<UserDTOResponse> patchActiveState(@Valid @RequestBody ActiveStateDTO activeStateDTO) {
         return new ResponseEntity<>(userService.changeActiveState(activeStateDTO), HttpStatus.OK);
     }
 }
