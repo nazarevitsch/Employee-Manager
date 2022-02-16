@@ -19,20 +19,17 @@ public class PasswordRecoveryController {
     @Autowired
     private UserService userService;
 
-//    TESTED
     @PostMapping
     public ResponseEntity<?> passwordRecoveryInitiate(@Valid @RequestBody InitiatePasswordRecoveryDTO initiatePasswordRecovery) {
         userService.passwordRecovery(initiatePasswordRecovery);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-//    TESTED
     @PatchMapping
     public ResponseEntity<UserDTOResponse> recoverPassword(@Valid @RequestBody PasswordRecoveryDTO activation) {
         return new ResponseEntity<>(userService.recoverPassword(activation), HttpStatus.OK);
     }
 
-//    TESTED
     @DeleteMapping
     public ResponseEntity<?> cancelPasswordRecovery(@RequestParam("userId") UUID userId){
         userService.cancelPasswordRecovery(userId);
