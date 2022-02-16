@@ -338,13 +338,7 @@ public class UserService implements UserDetailsService {
         passwordRecovery.setUserId(user.getId());
 
         passwordRecoveryRepository.save(passwordRecovery);
-
-        // TODO: Refactor sending emails
-        emailNotificationService.sendMessage(user.getEmail(), "Password recovery",
-                linkTemplate
-                        .replace("{userId}", user.getId().toString())
-                        .replace("{restorationToken}", activationToken)
-        );
+        emailNotificationService.sendMessagePasswordRecoveryInitiate(user, passwordRecovery);
     }
 
     public void cancelPasswordRecovery(UUID userId) {
