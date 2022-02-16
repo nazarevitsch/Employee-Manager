@@ -31,7 +31,6 @@ public class OrganizationService {
         userService.ownerCreationValidation(user);
 
         Organization organization = organizationRepository.save(organizationMapper.dtoToEntity(organizationDTO));
-
         userService.createOwner(user, organization.getId());
 
         return organizationMapper.entityToResponseDto(organization);
@@ -41,7 +40,6 @@ public class OrganizationService {
         return findOrganizationById(organizationId);
 
 //        TODO: refactor to check active state of organization
-
 //        Organization organization = findOrganizationById(organizationId);
 //        if (organization.getActiveEndDate() == null || organization.getActiveEndDate().isBefore(LocalDateTime.now())) {
 //            throw new BadRequestException("Organization with id: " + organizationId + " doesn't active.");

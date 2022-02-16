@@ -90,6 +90,9 @@ public class UserService implements UserDetailsService {
         if (userDTO.getUserRole().equals(UserRole.OWNER) || userDTO.getUserRole().equals(UserRole.INTERNAL_ADMINISTRATOR)) {
             throw new BadRequestException("Owner can't be created!");
         }
+        if (currentUser.getUserRole().equals(UserRole.ADMINISTRATOR) && userDTO.getUserRole().equals(UserRole.ADMINISTRATOR)) {
+            throw new BadRequestException("Administrator can't create another administrator!");
+        }
 
         User user = userMapper.dtoToEntity(userDTO);
         user.setActive(true);
@@ -160,7 +163,7 @@ public class UserService implements UserDetailsService {
         Cookie cookie = new Cookie("refreshToken", generateRefreshToken(userDetails));
         cookie.setPath("/");
         response.addCookie(cookie);
-        return new TokenDTOResponse("Bearer " + jwtUtilService.generateToken(userDetails));
+        return new TokenDTOResponse("Bearer " + jwtUtilService.generateAccessToken(userDetails));
     }
 
     public String generateRefreshToken(MyUserDetails userDetails) {
@@ -168,11 +171,11 @@ public class UserService implements UserDetailsService {
     }
 
     public TokenDTOResponse generateAccessToken(String token) {
-        UserDetails userDetails = loadUserByUsername(jwtUtilService.extractUsernameRefreshToken(token));
+        UserDetails userDetails = loadUserByUserId(jwtUtilService.extractIdRefreshToken(token));
         if (!jwtUtilService.validateRefreshToken(token, userDetails)) {
             throw new BadRequestException("Refresh token is expired!");
         }
-        return new TokenDTOResponse("Bearer " + jwtUtilService.generateToken(userDetails));
+        return new TokenDTOResponse("Bearer " + jwtUtilService.generateAccessToken(userDetails));
     }
 
     public UserDTOResponse changePassword(ChangePasswordDTO changePassword) {
@@ -351,6 +354,10 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
         return new MyUserDetails(findUserByEmail(s));
+    }
+
+    public UserDetails loadUserByUserId(UUID userId) throws UsernameNotFoundException {
+        return new MyUserDetails(findUserById(userId));
     }
 
     public void validateActiveUser(User user) {
