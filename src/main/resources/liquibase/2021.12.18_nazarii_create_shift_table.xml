@@ -17,4 +17,9 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="add-foreign-key-to-shift-table" author="nazarii">
+        <addForeignKeyConstraint baseTableName="shift" baseColumnNames="s_organization_id" constraintName="fk_shift_s_organization_id" referencedTableName="organization"
+                                 referencedColumnNames="o_id" validate="true"/>
+    </changeSet>
+
 </databaseChangeLog>

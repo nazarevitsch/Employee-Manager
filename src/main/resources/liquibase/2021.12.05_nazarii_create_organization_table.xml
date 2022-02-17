@@ -23,10 +23,16 @@
             <column defaultValueComputed="uuid_generate_v4()" name="o_id" type="uuid">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="pk_organization"/>
             </column>
-            <column name="o_name" type="varchar(40)"/>
+            <column name="o_name" type="varchar(40)">
+                <constraints nullable="false"/>
+            </column>
             <column name="o_active_end_date" type="timestamp"/>
-            <column name="o_creation_date" type="timestamp"/>
-            <column name="o_organization_type" type="organization_type"/>
+            <column name="o_creation_date" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="o_organization_type" type="organization_type">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
 

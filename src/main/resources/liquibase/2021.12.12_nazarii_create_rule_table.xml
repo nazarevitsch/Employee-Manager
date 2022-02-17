@@ -32,4 +32,9 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="add-foreign-key-to-rule-table" author="nazarii">
+        <addForeignKeyConstraint baseTableName="rule" baseColumnNames="r_organization_id" constraintName="fk_rule_r_organization_id" referencedTableName="organization"
+                                 referencedColumnNames="o_id" validate="true"/>
+    </changeSet>
+
 </databaseChangeLog>

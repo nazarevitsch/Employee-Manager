@@ -24,14 +24,33 @@
             <column name="u_phone_number" type="varchar(13)">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="u_password" type="varchar(100)"/>
-            <column name="u_first_name" type="varchar(25)"/>
-            <column name="u_last_name" type="varchar(25)"/>
-            <column name="u_creation_date" type="timestamp"/>
-            <column name="u_organization_id" type="uuid"/>
-            <column name="u_is_active" type="bool" defaultValue="true"/>
-            <column name="u_user_role" type="user_role"/>
+            <column name="u_password" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="u_first_name" type="varchar(25)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="u_last_name" type="varchar(25)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="u_creation_date" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="u_organization_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="u_is_active" type="bool" defaultValue="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="u_user_role" type="user_role">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
+    </changeSet>
+
+    <changeSet id="add-foreign-key-to-user-table" author="nazarii">
+        <addForeignKeyConstraint baseTableName="users" baseColumnNames="u_organization_id" constraintName="fk_users_u_organization_id" referencedTableName="organization"
+                                 referencedColumnNames="o_id" validate="true"/>
     </changeSet>
 
 </databaseChangeLog>
