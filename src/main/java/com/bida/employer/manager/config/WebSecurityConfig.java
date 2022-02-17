@@ -53,6 +53,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.DELETE,
                         "/user/password_recovery")
                 .permitAll()
+                .antMatchers(HttpMethod.PATCH,
+                        "/user/password_recovery")
+                .permitAll()
                 .antMatchers(HttpMethod.GET,
                         "user/refresh_token",
                         "/user/password_recovery")

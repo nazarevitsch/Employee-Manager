@@ -21,13 +21,13 @@ public class PasswordRecoveryController {
 
     @PostMapping
     public ResponseEntity<?> passwordRecoveryInitiate(@Valid @RequestBody InitiatePasswordRecoveryDTO initiatePasswordRecovery) {
-        userService.passwordRecovery(initiatePasswordRecovery);
+        userService.initiatePasswordRecovery(initiatePasswordRecovery);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PatchMapping
-    public ResponseEntity<UserDTOResponse> recoverPassword(@Valid @RequestBody PasswordRecoveryDTO activation) {
-        return new ResponseEntity<>(userService.recoverPassword(activation), HttpStatus.OK);
+    public ResponseEntity<UserDTOResponse> recoverPassword(@Valid @RequestBody PasswordRecoveryDTO passwordRecovery) {
+        return new ResponseEntity<>(userService.recoverPassword(passwordRecovery), HttpStatus.OK);
     }
 
     @DeleteMapping

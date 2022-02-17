@@ -127,24 +127,24 @@ public class UserService implements UserDetailsService {
         return userMapper.entityToDto(user);
     }
 
-    public UserDTOResponse recoverPassword(PasswordRecoveryDTO activation) {
-        User user = findUserById(activation.getUserId());
+    public UserDTOResponse recoverPassword(PasswordRecoveryDTO passwordRecoveryDTO) {
+        User user = findUserById(passwordRecoveryDTO.getUserId());
         validateActiveUser(user);
 
-        PasswordRecovery passwordRecovery = Optional.ofNullable(passwordRecoveryRepository.findByUserId(activation.getUserId()))
+        PasswordRecovery passwordRecovery = Optional.ofNullable(passwordRecoveryRepository.findByUserId(passwordRecoveryDTO.getUserId()))
                 .orElseThrow(() -> new NotFoundException("Password recovery for user: " + user.getId() + " wasn't initiated!"));
 
         if (passwordRecovery.getExpirationDate().isBefore(LocalDateTime.now())) {
             passwordRecoveryRepository.deleteByUserId(user.getId());
             throw new BadRequestException("Activation code is expired!");
         }
-        if (!passwordEncoder.matches(activation.getToken(), passwordRecovery.getToken())) {
+        if (!passwordEncoder.matches(passwordRecoveryDTO.getToken(), passwordRecovery.getToken())) {
             passwordRecoveryRepository.deleteByUserId(user.getId());
             throw new BadRequestException("Wrong activation token!");
         }
 
-        validator.validatePassword(activation.getPassword(), user.getEmail());
-        user.setPassword(passwordEncoder.encode(activation.getPassword()));
+        validator.validatePassword(passwordRecoveryDTO.getPassword(), user.getEmail());
+        user.setPassword(passwordEncoder.encode(passwordRecoveryDTO.getPassword()));
         passwordRecoveryRepository.deleteByUserId(user.getId());
         return userMapper.entityToDto(user);
     }
@@ -195,7 +195,7 @@ public class UserService implements UserDetailsService {
         return userMapper.entityToDto(userRepository.save(currentUser));
     }
 
-    public void passwordRecovery(InitiatePasswordRecoveryDTO initiatePasswordRecovery) {
+    public void initiatePasswordRecovery(InitiatePasswordRecoveryDTO initiatePasswordRecovery) {
         User user = findUserByEmail(initiatePasswordRecovery.getEmail());
         validateActiveUser(user);
         passwordRecovery(user);
