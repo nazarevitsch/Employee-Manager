@@ -6,7 +6,7 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd"
 >
 
-    <changeSet id="create_enum_type_user_role" author="nazar">
+    <changeSet id="create_enum_type_user_role" author="nazarii">
         <sql>
             drop type if exists user_role cascade;
             create type user_role as enum('INTERNAL_ADMINISTRATOR', 'OWNER', 'ADMINISTRATOR', 'EMPLOYEE');

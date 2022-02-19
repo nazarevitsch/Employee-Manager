@@ -1,8 +1,6 @@
 package com.bida.employer.manager.domain;
 
-import com.bida.employer.manager.domain.enums.PostgreSQLEnumType;
-import com.bida.employer.manager.domain.enums.SubstituteMeRule;
-import com.bida.employer.manager.domain.enums.SwapShiftRule;
+import com.bida.employer.manager.domain.enums.*;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
@@ -41,11 +39,21 @@ public class Rule {
     @Type(type = "pgsql_enum")
     private SubstituteMeRule substituteMeRule;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "r_check_in_rule")
+    @Type(type = "pgsql_enum")
+    private CheckInRule checkInRule;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "r_not_assigned_shift_rule")
+    @Type(type = "pgsql_enum")
+    private NotAssignedShift notAssignedShiftRule;
+
+    @Column(name = "r_max_employee_shift_application")
+    private int maxEmployeeShiftApplication;
+
     @Column(name = "r_last_update_date")
     private LocalDateTime lastUpdateDate;
-
-    @Column(name = "r_last_update_user_id")
-    private UUID lastUpdateId;
 
     @Column(name = "r_organization_id")
     private UUID organizationId;
