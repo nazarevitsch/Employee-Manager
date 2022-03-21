@@ -27,8 +27,7 @@ public class EmailNotificationService {
     public void sendMessagePasswordRecoveryInitiate(User user, PasswordRecovery passwordRecovery) {
         HashMap<String, String> dataEmailTemplate = new HashMap<>();
         dataEmailTemplate.put("email", user.getEmail());
-
-
+        // TODO add another fields to html email template
         try {
             sendHtmlMessage(user.getEmail(), "Password recovery", dataEmailTemplate);
         } catch (Exception e) {

@@ -8,9 +8,9 @@ import java.util.UUID;
 @Data
 public class ActiveStateDTO {
 
-    @NotNull(message = "Id should be not null.")
+    @NotNull(message = "Id should be not null!")
     private UUID userId;
 
-    @NotNull(message = "Active should be not null.")
+    @NotNull(message = "Active should be not null!")
     private Boolean active;
 }

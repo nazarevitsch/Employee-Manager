@@ -9,9 +9,9 @@ import java.util.UUID;
 @Data
 public class UserRoleDTO {
 
-    @NotNull(message = "Id should be not null.")
+    @NotNull(message = "Id should be not null!")
     private UUID userId;
 
-    @NotNull(message = "User Role should be not null.")
+    @NotNull(message = "User Role should be not null!")
     private UserRole userRole;
 }

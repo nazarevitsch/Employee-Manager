@@ -35,10 +35,10 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
     public ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
-        ControllerMultipleErrorResponse controllerMultipleErrorResponse = ControllerMultipleErrorResponse.builder()
-                .message(ex.getBindingResult().getAllErrors().stream().map(DefaultMessageSourceResolvable::getDefaultMessage).collect(Collectors.toList()))
+        ControllerErrorResponse controllerErrorResponse = ControllerErrorResponse.builder()
+                .message(ex.getBindingResult().getAllErrors().stream().map(DefaultMessageSourceResolvable::getDefaultMessage).collect(Collectors.toList()).get(0))
                 .errorCode("bad_request")
                 .build();
-        return new ResponseEntity<>(controllerMultipleErrorResponse, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(controllerErrorResponse, HttpStatus.BAD_REQUEST);
     }
 }

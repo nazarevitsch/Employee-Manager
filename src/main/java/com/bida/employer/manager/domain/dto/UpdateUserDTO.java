@@ -8,15 +8,15 @@ import javax.validation.constraints.NotNull;
 @Data
 public class UpdateUserDTO {
 
-    @NotNull(message = "Email can't be null.")
+    @NotNull(message = "Email can't be null!")
     private String email;
 
-    @NotNull(message = "Phone number can't be null.")
+    @NotNull(message = "Phone number can't be null!")
     private String phoneNumber;
 
-    @NotEmpty(message = "First name can't be null or empty.")
+    @NotEmpty(message = "First name can't be null or empty!")
     private String firstName;
 
-    @NotEmpty(message = "Last name can't be null or empty.")
+    @NotEmpty(message = "Last name can't be null or empty!")
     private String lastName;
 }

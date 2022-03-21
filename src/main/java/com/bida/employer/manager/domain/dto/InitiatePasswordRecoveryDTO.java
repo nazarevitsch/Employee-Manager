@@ -7,6 +7,6 @@ import javax.validation.constraints.NotNull;
 @Data
 public class InitiatePasswordRecoveryDTO {
 
-    @NotNull(message = "Email should be not null.")
+    @NotNull(message = "Email should be not null!")
     private String email;
 }
