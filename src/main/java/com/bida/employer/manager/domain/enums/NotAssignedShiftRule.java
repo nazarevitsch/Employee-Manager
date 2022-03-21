@@ -1,5 +1,5 @@
 package com.bida.employer.manager.domain.enums;
 
-public enum  NotAssignedShift {
+public enum NotAssignedShiftRule {
     PROHIBITED, ALLOWED;
 }

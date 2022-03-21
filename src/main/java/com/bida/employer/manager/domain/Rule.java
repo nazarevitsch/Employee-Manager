@@ -47,7 +47,7 @@ public class Rule {
     @Enumerated(EnumType.STRING)
     @Column(name = "r_not_assigned_shift_rule")
     @Type(type = "pgsql_enum")
-    private NotAssignedShift notAssignedShiftRule;
+    private NotAssignedShiftRule notAssignedShiftRule;
 
     @Column(name = "r_max_employee_shift_application")
     private int maxEmployeeShiftApplication;
