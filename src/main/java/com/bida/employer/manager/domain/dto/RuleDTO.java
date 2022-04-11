@@ -6,6 +6,7 @@ import com.bida.employer.manager.domain.enums.SubstituteMeRule;
 import com.bida.employer.manager.domain.enums.SwapShiftRule;
 import lombok.Data;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 @Data

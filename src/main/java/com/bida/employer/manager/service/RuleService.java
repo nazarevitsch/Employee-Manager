@@ -12,11 +12,8 @@ public class RuleService {
         if (rule.getNotAssignedShiftRule().equals(NotAssignedShiftRule.ALLOWED) && rule.getMaxEmployeeShiftApplication() <= 0) {
             throw new BadRequestException("If not assigned shifts are allowed, size of applications should be more then 0!");
         }
-        if (rule.getNotAssignedShiftRule().equals(NotAssignedShiftRule.PROHIBITED) && rule.getMaxEmployeeShiftApplication() > 0) {
+        if (rule.getNotAssignedShiftRule().equals(NotAssignedShiftRule.PROHIBITED) && rule.getMaxEmployeeShiftApplication() != 0) {
             throw new BadRequestException("If not assigned shifts are prohibited, size of applications should be 0!");
-        }
-        if (rule.getMaxEmployeeShiftApplication() < 0) {
-            throw new BadRequestException("Size of applications can't be less then 0!");
         }
     }
 }

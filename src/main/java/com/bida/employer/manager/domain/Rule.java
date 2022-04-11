@@ -2,6 +2,7 @@ package com.bida.employer.manager.domain;
 
 import com.bida.employer.manager.domain.enums.*;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -53,6 +54,7 @@ public class Rule {
     private int maxEmployeeShiftApplication;
 
     @Column(name = "r_last_update_date")
+    @CreationTimestamp
     private LocalDateTime lastUpdateDate;
 
     @Column(name = "r_organization_id")

@@ -3,6 +3,7 @@ package com.bida.employer.manager.domain.dto;
 import com.bida.employer.manager.domain.enums.OrganizationType;
 import lombok.Data;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -19,5 +20,6 @@ public class OrganizationCreateDTO {
     private UserRegistrationDTO user;
 
     @NotNull(message = "Rule can't be empty!")
+    @Valid
     private RuleDTO rules;
 }
