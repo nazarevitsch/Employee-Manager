@@ -13,4 +13,6 @@ public class OrganizationDTOResponse {
     private LocalDateTime activeEndDate;
     private LocalDateTime creationDate;
     private OrganizationType organizationType;
+
+    private RuleDTOResponse rules;
 }

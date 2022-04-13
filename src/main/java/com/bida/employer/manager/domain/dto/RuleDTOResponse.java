@@ -9,19 +9,11 @@ import lombok.Data;
 import javax.validation.constraints.NotNull;
 
 @Data
-public class RuleDTO {
+public class RuleDTOResponse {
 
-    @NotNull(message = "Substitute Me Rule can't be empty!")
     private SubstituteMeRule substituteMeRule;
-
-    @NotNull(message = "Swap Shift Rule can't be empty!")
     private SwapShiftRule swapShiftRule;
-
-    @NotNull(message = "Checkin Rule can't be empty!")
     private CheckInRule checkInRule;
-
-    @NotNull(message = "Not Assigned Shift Rule can't be empty!")
     private NotAssignedShiftRule notAssignedShiftRule;
-
     private int maxEmployeeShiftApplication;
 }

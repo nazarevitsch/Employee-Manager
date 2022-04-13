@@ -1,11 +1,10 @@
 package com.bida.employer.manager.service;
 
+import com.bida.employer.manager.domain.MyUserDetails;
 import com.bida.employer.manager.domain.Organization;
 import com.bida.employer.manager.domain.Rule;
-import com.bida.employer.manager.domain.dto.OrganizationCreateDTO;
-import com.bida.employer.manager.domain.dto.OrganizationDTOResponse;
-import com.bida.employer.manager.domain.dto.UserCreateDTO;
-import com.bida.employer.manager.domain.dto.UserRegistrationDTO;
+import com.bida.employer.manager.domain.User;
+import com.bida.employer.manager.domain.dto.*;
 import com.bida.employer.manager.exception.BadRequestException;
 import com.bida.employer.manager.exception.NotFoundException;
 import com.bida.employer.manager.mapper.OrganizationMapper;
@@ -13,6 +12,7 @@ import com.bida.employer.manager.mapper.RuleMapper;
 import com.bida.employer.manager.repository.OrganizationRepository;
 import com.bida.employer.manager.repository.RuleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -35,6 +35,12 @@ public class OrganizationService {
     @Autowired
     private OrganizationRepository organizationRepository;
 
+    public OrganizationDTOResponse getOrganizationOfCurrentUser() {
+        User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        OrganizationDTOResponse organization = organizationMapper.entityToResponseDto(findOrganizationById(currentUser.getOrganizationId()));
+        organization.setRules(ruleMapper.entityToDto(ruleService.findRuleByOrganizationId(currentUser.getOrganizationId())));
+        return organization;
+    }
 
     public OrganizationDTOResponse create(OrganizationCreateDTO organizationDTO) {
         UserRegistrationDTO user = organizationDTO.getUser();
@@ -45,11 +51,48 @@ public class OrganizationService {
         Rule rule = ruleMapper.dtoToEntity(organizationDTO.getRules());
         rule.setOrganizationId(organization.getId());
         ruleService.validateRule(rule);
-        ruleRepository.save(rule);
+        Rule savedRule = ruleRepository.save(rule);
 
         userService.createOwner(user, organization.getId());
+        OrganizationDTOResponse organizationDTOResponse = organizationMapper.entityToResponseDto(organization);
+        organizationDTOResponse.setRules(ruleMapper.entityToDto(savedRule));
 
-        return organizationMapper.entityToResponseDto(organization);
+        return organizationDTOResponse;
+    }
+
+    public OrganizationDTOResponse updateRules(RuleDTO ruleDTO) {
+        User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        Organization currentOrganization = findOrganizationById(currentUser.getOrganizationId());
+
+        Rule newRule = ruleMapper.dtoToEntity(ruleDTO);
+        ruleService.validateRule(newRule);
+        Rule existedRule = ruleService.findRuleByOrganizationId(currentOrganization.getId());
+
+        newRule.setId(existedRule.getId());
+        newRule.setOrganizationId(existedRule.getOrganizationId());
+        newRule.setLastUpdateDate(LocalDateTime.now());
+
+        Rule savedRule = ruleRepository.save(newRule);
+
+        OrganizationDTOResponse organizationDTOResponse = organizationMapper.entityToResponseDto(currentOrganization);
+        organizationDTOResponse.setRules(ruleMapper.entityToDto(savedRule));
+        return organizationDTOResponse;
+    }
+
+    public OrganizationDTOResponse patchOrganizationSize(OrganizationSizeDTO organizationSizeDTO) {
+        User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        Organization currentOrganization = findOrganizationById(currentUser.getOrganizationId());
+
+        if (currentOrganization.getOrganizationType() == organizationSizeDTO.getOrganizationType()) {
+            throw new BadRequestException("Organization has already such size!");
+        }
+        currentOrganization.setOrganizationType(organizationSizeDTO.getOrganizationType());
+        Organization savedOrganization = organizationRepository.save(currentOrganization);
+
+        OrganizationDTOResponse organizationDTOResponse = organizationMapper.entityToResponseDto(savedOrganization);
+        organizationDTOResponse.setRules(ruleMapper.entityToDto(ruleRepository.findRuleByOrganizationId(currentOrganization.getId())));
+
+        return organizationDTOResponse;
     }
 
     public Organization isOrganizationActive(UUID organizationId) {
