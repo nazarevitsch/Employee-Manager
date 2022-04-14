@@ -1,6 +1,6 @@
 package com.bida.employer.manager.domain.dto;
 
-import com.bida.employer.manager.domain.enums.OrganizationType;
+import com.bida.employer.manager.domain.enums.OrganizationSize;
 import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -12,7 +12,7 @@ public class OrganizationDTOResponse {
     private String name;
     private LocalDateTime activeEndDate;
     private LocalDateTime creationDate;
-    private OrganizationType organizationType;
+    private OrganizationSize organizationSize;
 
     private RuleDTOResponse rules;
 }

@@ -11,10 +11,10 @@
         </sql>
     </changeSet>
 
-    <changeSet id="create_enum_type_organization_type" author="nazarii">
+    <changeSet id="create_enum_type_organization_size" author="nazarii">
         <sql>
-            drop type if exists organization_type cascade;
-            create type organization_type as enum('SMALL', 'MIDDLE', 'LARGE');
+            drop type if exists organization_size cascade;
+            create type organization_size as enum('SMALL', 'MIDDLE', 'LARGE');
         </sql>
     </changeSet>
 
@@ -30,7 +30,7 @@
             <column name="o_creation_date" type="timestamp">
                 <constraints nullable="false"/>
             </column>
-            <column name="o_organization_type" type="organization_type">
+            <column name="o_organization_size" type="organization_size">
                 <constraints nullable="false"/>
             </column>
         </createTable>

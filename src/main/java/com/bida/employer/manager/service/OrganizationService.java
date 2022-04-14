@@ -83,10 +83,10 @@ public class OrganizationService {
         User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
         Organization currentOrganization = findOrganizationById(currentUser.getOrganizationId());
 
-        if (currentOrganization.getOrganizationType() == organizationSizeDTO.getOrganizationType()) {
+        if (currentOrganization.getOrganizationSize() == organizationSizeDTO.getOrganizationSize()) {
             throw new BadRequestException("Organization has already such size!");
         }
-        currentOrganization.setOrganizationType(organizationSizeDTO.getOrganizationType());
+        currentOrganization.setOrganizationSize(organizationSizeDTO.getOrganizationSize());
         Organization savedOrganization = organizationRepository.save(currentOrganization);
 
         OrganizationDTOResponse organizationDTOResponse = organizationMapper.entityToResponseDto(savedOrganization);

@@ -1,11 +1,11 @@
 package com.bida.employer.manager.domain.enums;
 
-public enum OrganizationType {
+public enum OrganizationSize {
     SMALL(10), MIDDLE(25), LARGE(50);
 
     private int size;
 
-    private OrganizationType(int size){
+    private OrganizationSize(int size){
         this.size = size;
     }
 

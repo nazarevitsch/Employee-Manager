@@ -84,7 +84,7 @@ public class UserService implements UserDetailsService {
         Organization organization = organizationService.isOrganizationActive(organizationId);
 
         int count = userRepository.countEmployersByOrganizationId(organizationId);
-        if (count >= organization.getOrganizationType().getSize()) {
+        if (count >= organization.getOrganizationSize().getSize()) {
             throw new BadRequestException("Organization with id: " + organizationId + " has max size!");
         }
         if (userDTO.getUserRole().equals(UserRole.OWNER) || userDTO.getUserRole().equals(UserRole.INTERNAL_ADMINISTRATOR)) {
@@ -268,7 +268,7 @@ public class UserService implements UserDetailsService {
         UUID organizationId = currentUser.getOrganizationId();
         Organization organization = organizationService.isOrganizationActive(organizationId);
         int employeeCount = userRepository.countEmployersByOrganizationId(organizationId);
-        if (employeeCount >= organization.getOrganizationType().getSize() && activeStateDTO.getActive()) {
+        if (employeeCount >= organization.getOrganizationSize().getSize() && activeStateDTO.getActive()) {
             throw new BadRequestException("Organization with id: " + organizationId + " has max size!");
         }
 
