@@ -10,16 +10,19 @@
             <column defaultValueComputed="uuid_generate_v4()" name="s_id" type="uuid">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="pk_shift"/>
             </column>
-            <column name="s_last_update_date" type="timestamp"/>
-            <column name="s_last_update_id" type="uuid"/>
-            <column name="s_creator_id" type="uuid"/>
-            <column name="s_organization_id" type="uuid"/>
+            <column name="s_title" type="varchar(40)"/>
+            <column name="s_description" type="text"/>
+            <column name="s_shift_start" type="timestamp"/>
+            <column name="s_shift_finish" type="timestamp"/>
+            <column name="s_last_modification_date" type="timestamp"/>
+            <column name="s_last_modification_id" type="uuid"/>
+            <column name="s_user_id" type="uuid"/>
         </createTable>
     </changeSet>
 
     <changeSet id="add-foreign-key-to-shift-table" author="nazarii">
-        <addForeignKeyConstraint baseTableName="shift" baseColumnNames="s_organization_id" constraintName="fk_shift_s_organization_id" referencedTableName="organization"
-                                 referencedColumnNames="o_id" validate="true"/>
+        <addForeignKeyConstraint baseTableName="shift" baseColumnNames="s_user_id" constraintName="fk_shift_s_user_id" referencedTableName="users"
+                                 referencedColumnNames="u_id" validate="true"/>
     </changeSet>
 
 </databaseChangeLog>
