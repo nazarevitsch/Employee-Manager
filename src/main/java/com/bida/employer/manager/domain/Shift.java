@@ -14,7 +14,7 @@ import java.util.UUID;
 public class Shift {
 
     @Id
-    @Column(name = "o_id")
+    @Column(name = "s_id")
     @Type(type = "pg-uuid")
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(
