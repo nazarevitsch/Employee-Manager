@@ -10,13 +10,27 @@
             <column defaultValueComputed="uuid_generate_v4()" name="s_id" type="uuid">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="pk_shift"/>
             </column>
-            <column name="s_title" type="varchar(40)"/>
-            <column name="s_description" type="text"/>
-            <column name="s_shift_start" type="timestamp"/>
-            <column name="s_shift_finish" type="timestamp"/>
-            <column name="s_last_modification_date" type="timestamp"/>
-            <column name="s_last_modification_id" type="uuid"/>
-            <column name="s_user_id" type="uuid"/>
+            <column name="s_title" type="varchar(40)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="s_description" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="s_shift_start" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="s_shift_finish" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="s_last_modification_date" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="s_last_modification_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="s_user_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
 
