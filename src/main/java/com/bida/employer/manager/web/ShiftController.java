@@ -6,12 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/shift")
@@ -24,6 +23,22 @@ public class ShiftController {
     @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
     public ResponseEntity<?> create(@RequestBody @Valid CreateShiftDTO createShiftDTO) {
         shiftService.create(createShiftDTO);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+//    TODO Delete only future shifts !!!
+//    @PutMapping
+//    @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
+//    public ResponseEntity<?> update() {
+//        return new ResponseEntity<>(HttpStatus.OK);
+//    }
+
+
+//    TODO Delete only future shifts !!!
+    @DeleteMapping
+    @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
+    public ResponseEntity<?> delete(@RequestParam("shiftIds") List<UUID> shiftIds) {
+        shiftService.delete(shiftIds);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

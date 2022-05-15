@@ -4,8 +4,7 @@ import com.bida.employer.manager.domain.MyUserDetails;
 import com.bida.employer.manager.domain.Shift;
 import com.bida.employer.manager.domain.User;
 import com.bida.employer.manager.domain.dto.CreateShiftDTO;
-import com.bida.employer.manager.domain.dto.EmployeeDTO;
-import com.bida.employer.manager.domain.dto.ShiftDTO;
+import com.bida.employer.manager.domain.dto.ShiftTimeDTO;
 import com.bida.employer.manager.exception.BadRequestException;
 import com.bida.employer.manager.repository.ShiftRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ShiftService {
@@ -30,21 +30,24 @@ public class ShiftService {
 
         List<Shift> shifts = new LinkedList<>();
 
-        for (EmployeeDTO employeeDTO : createShiftDTO.getEmployees()) {
-            User user = userService.findUserById(employeeDTO.getUserId());
+        for (UUID userId : createShiftDTO.getUserIds()) {
+            User user = userService.findUserById(userId);
             if (!user.getOrganizationId().equals(currentUser.getOrganizationId())) {
                 throw new BadRequestException("User with id: " + user.getId() + " is from another organization!");
             }
 
             List<Shift> handledShifts = new LinkedList<>();
-            for (ShiftDTO shiftDTO : employeeDTO.getShifts()) {
+            for (ShiftTimeDTO shiftTimeDTO : createShiftDTO.getShifts()) {
+                if (shiftTimeDTO.getShiftStart().isAfter(shiftTimeDTO.getShiftFinish())) {
+                    throw new BadRequestException("Start of the shift after finish of the shift.");
+                }
                 Shift shift = new Shift();
-                shift.setTitle(employeeDTO.getTitle());
-                shift.setDescription(employeeDTO.getDescription());
+                shift.setTitle(createShiftDTO.getTitle());
+                shift.setDescription(createShiftDTO.getDescription());
                 shift.setLastModificationUser(currentUser.getOrganizationId());
                 shift.setLastModificationDate(LocalDateTime.now());
-                shift.setShiftStart(shiftDTO.getShiftStart());
-                shift.setShiftFinish(shiftDTO.getShiftFinish());
+                shift.setShiftStart(shiftTimeDTO.getShiftStart());
+                shift.setShiftFinish(shiftTimeDTO.getShiftFinish());
                 handledShifts.add(shift);
             }
 
@@ -52,5 +55,10 @@ public class ShiftService {
         }
 
         shiftRepository.saveAll(shifts);
+    }
+
+    public void delete(List<UUID> shiftIds) {
+        User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        shiftRepository.deleteShiftsByIdsAndOrganizationId(currentUser.getOrganizationId(), shiftIds);
     }
 }

@@ -6,7 +6,7 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Data
-public class ShiftDTO {
+public class ShiftTimeDTO {
 
     @NotNull
     private LocalDateTime shiftStart;
