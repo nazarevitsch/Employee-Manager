@@ -16,6 +16,13 @@ public interface ShiftRepository extends JpaRepository<Shift, UUID> {
 
     @Modifying
     @Transactional
-    @Query(value = "delete from shift where s_id in ('1') and s_user_id = ''", nativeQuery = true)
-    public void deleteShiftsByIdsAndOrganizationId(@Param("") UUID organizationId, @Param("") List<UUID> shiftsId);
+    @Query(value = "delete from shift where s_id in (:shiftIds) and s_user_id in " +
+            "(select s_user_id from users where u_organization_id = :organizationId)", nativeQuery = true)
+    void deleteShiftsByIdsAndOrganizationId(@Param("organizationId") UUID organizationId, @Param("shiftIds") List<UUID> shiftsId);
+
+//    @Modifying
+//    @Transactional
+//    @Query(value = "delete from shift where s_id in (:shiftIds) and s_user_id in " +
+//            "(select s_user_id from users where u_organization_id = :organizationId)", nativeQuery = true)
+//    void updateShiftByIdsAndOrganizationId(@Param("organizationId") UUID organizationId, @Param("shiftIds") UUID shiftId);
 }

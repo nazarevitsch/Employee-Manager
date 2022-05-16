@@ -1,6 +1,7 @@
 package com.bida.employer.manager.web;
 
 import com.bida.employer.manager.domain.dto.CreateShiftDTO;
+import com.bida.employer.manager.domain.dto.UpdateShiftDTO;
 import com.bida.employer.manager.service.ShiftService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,15 +27,13 @@ public class ShiftController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-//    TODO Delete only future shifts !!!
-//    @PutMapping
-//    @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
-//    public ResponseEntity<?> update() {
-//        return new ResponseEntity<>(HttpStatus.OK);
-//    }
+    @PutMapping
+    @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
+    public ResponseEntity<?> update(@RequestBody @Valid UpdateShiftDTO updateShiftDTO) {
+        shiftService.update(updateShiftDTO);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
-
-//    TODO Delete only future shifts !!!
     @DeleteMapping
     @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
     public ResponseEntity<?> delete(@RequestParam("shiftIds") List<UUID> shiftIds) {

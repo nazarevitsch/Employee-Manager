@@ -5,7 +5,10 @@ import com.bida.employer.manager.domain.Shift;
 import com.bida.employer.manager.domain.User;
 import com.bida.employer.manager.domain.dto.CreateShiftDTO;
 import com.bida.employer.manager.domain.dto.ShiftTimeDTO;
+import com.bida.employer.manager.domain.dto.UpdateShiftDTO;
 import com.bida.employer.manager.exception.BadRequestException;
+import com.bida.employer.manager.exception.NotFoundException;
+import com.bida.employer.manager.mapper.ShiftMapper;
 import com.bida.employer.manager.repository.ShiftRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,6 +26,8 @@ public class ShiftService {
     private ShiftRepository shiftRepository;
     @Autowired
     private UserService userService;
+    @Autowired
+    private ShiftMapper shiftMapper;
 
 
     public void create(CreateShiftDTO createShiftDTO) {
@@ -57,8 +62,28 @@ public class ShiftService {
         shiftRepository.saveAll(shifts);
     }
 
+    public void update(UpdateShiftDTO updateShiftDTO) {
+        User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+
+        Shift existedShift = findById(updateShiftDTO.getShiftId());
+        User user = userService.findUserById(existedShift.getUserId());
+
+        if (user.getOrganizationId().equals(currentUser.getOrganizationId())) {
+            throw new BadRequestException("Shift with id: " + updateShiftDTO.getShiftId() + " belongs to user from another organization!");
+        }
+        Shift newShift = shiftMapper.dtoToEntity(updateShiftDTO);
+        newShift.setLastModificationUser(currentUser.getId());
+        newShift.setUserId(user.getId());
+        shiftRepository.save(newShift);
+    }
+
     public void delete(List<UUID> shiftIds) {
         User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
         shiftRepository.deleteShiftsByIdsAndOrganizationId(currentUser.getOrganizationId(), shiftIds);
+    }
+
+    public Shift findById(UUID shiftId) {
+       return shiftRepository.findById(shiftId)
+               .orElseThrow(() -> new NotFoundException("Shift with id: " + shiftId + " doesn't exist!"));
     }
 }
