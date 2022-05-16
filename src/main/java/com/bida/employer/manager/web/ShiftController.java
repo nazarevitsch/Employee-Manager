@@ -1,6 +1,7 @@
 package com.bida.employer.manager.web;
 
 import com.bida.employer.manager.domain.dto.CreateShiftDTO;
+import com.bida.employer.manager.domain.dto.ShiftDTOResponse;
 import com.bida.employer.manager.domain.dto.UpdateShiftDTO;
 import com.bida.employer.manager.service.ShiftService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,11 @@ public class ShiftController {
     @Autowired
     private ShiftService shiftService;
 
+    @GetMapping("/{shiftId}")
+    public ResponseEntity<ShiftDTOResponse> get(@PathVariable("shiftId") UUID shiftId) {
+        return new ResponseEntity<>(shiftService.get(shiftId), HttpStatus.OK);
+    }
+
     @PostMapping
     @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
     public ResponseEntity<?> create(@RequestBody @Valid CreateShiftDTO createShiftDTO) {
@@ -29,9 +35,8 @@ public class ShiftController {
 
     @PutMapping
     @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
-    public ResponseEntity<?> update(@RequestBody @Valid UpdateShiftDTO updateShiftDTO) {
-        shiftService.update(updateShiftDTO);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<ShiftDTOResponse> update(@RequestBody @Valid UpdateShiftDTO updateShiftDTO) {
+        return new ResponseEntity<>(shiftService.update(updateShiftDTO), HttpStatus.OK);
     }
 
     @DeleteMapping

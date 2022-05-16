@@ -4,6 +4,7 @@ import com.bida.employer.manager.domain.MyUserDetails;
 import com.bida.employer.manager.domain.Shift;
 import com.bida.employer.manager.domain.User;
 import com.bida.employer.manager.domain.dto.CreateShiftDTO;
+import com.bida.employer.manager.domain.dto.ShiftDTOResponse;
 import com.bida.employer.manager.domain.dto.ShiftTimeDTO;
 import com.bida.employer.manager.domain.dto.UpdateShiftDTO;
 import com.bida.employer.manager.exception.BadRequestException;
@@ -62,19 +63,30 @@ public class ShiftService {
         shiftRepository.saveAll(shifts);
     }
 
-    public void update(UpdateShiftDTO updateShiftDTO) {
+    public ShiftDTOResponse update(UpdateShiftDTO updateShiftDTO) {
         User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
 
         Shift existedShift = findById(updateShiftDTO.getShiftId());
         User user = userService.findUserById(existedShift.getUserId());
 
-        if (user.getOrganizationId().equals(currentUser.getOrganizationId())) {
+        if (!user.getOrganizationId().equals(currentUser.getOrganizationId())) {
             throw new BadRequestException("Shift with id: " + updateShiftDTO.getShiftId() + " belongs to user from another organization!");
         }
         Shift newShift = shiftMapper.dtoToEntity(updateShiftDTO);
         newShift.setLastModificationUser(currentUser.getId());
         newShift.setUserId(user.getId());
-        shiftRepository.save(newShift);
+        return shiftMapper.entityToDto(shiftRepository.save(newShift));
+    }
+
+    public ShiftDTOResponse get(UUID shiftId) {
+        User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+
+        Shift shift = findById(shiftId);
+        if (!currentUser.getOrganizationId().equals(userService.findUserById(shift.getUserId()).getOrganizationId())) {
+            throw new BadRequestException("Shift with id: " + shiftId + " belongs to user from another organization!");
+        }
+
+        return shiftMapper.entityToDto(shift);
     }
 
     public void delete(List<UUID> shiftIds) {
