@@ -5,12 +5,15 @@ import com.bida.employer.manager.domain.dto.ShiftDTOResponse;
 import com.bida.employer.manager.domain.dto.UpdateShiftDTO;
 import com.bida.employer.manager.service.ShiftService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,8 +25,16 @@ public class ShiftController {
     private ShiftService shiftService;
 
     @GetMapping("/{shiftId}")
-    public ResponseEntity<ShiftDTOResponse> get(@PathVariable("shiftId") UUID shiftId) {
-        return new ResponseEntity<>(shiftService.get(shiftId), HttpStatus.OK);
+    public ResponseEntity<ShiftDTOResponse> getShift(@PathVariable("shiftId") UUID shiftId) {
+        return new ResponseEntity<>(shiftService.getShift(shiftId), HttpStatus.OK);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ShiftDTOResponse>> getShifts(@RequestParam(value = "userId", required = false) UUID userId,
+                                                      @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+                                                      @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+                                                      ) {
+        return new ResponseEntity<>(shiftService.getShifts(userId, from, to), HttpStatus.OK);
     }
 
     @PostMapping

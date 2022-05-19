@@ -11,10 +11,12 @@ import com.bida.employer.manager.exception.BadRequestException;
 import com.bida.employer.manager.exception.NotFoundException;
 import com.bida.employer.manager.mapper.ShiftMapper;
 import com.bida.employer.manager.repository.ShiftRepository;
+import com.bida.employer.manager.repository.ShiftRepositoryCustom;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,6 +27,8 @@ public class ShiftService {
 
     @Autowired
     private ShiftRepository shiftRepository;
+    @Autowired
+    private ShiftRepositoryCustom shiftRepositoryCustom;
     @Autowired
     private UserService userService;
     @Autowired
@@ -78,14 +82,22 @@ public class ShiftService {
         return shiftMapper.entityToDto(shiftRepository.save(newShift));
     }
 
-    public ShiftDTOResponse get(UUID shiftId) {
+    public List<ShiftDTOResponse> getShifts(UUID userId, LocalDate from, LocalDate to) {
+        User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+
+        List<Shift> shifts = shiftRepositoryCustom.findByFilters(userId, currentUser.getOrganizationId(),
+                from.atStartOfDay(), to.atStartOfDay());
+
+        return shiftMapper.entityToDto(shifts);
+    }
+
+    public ShiftDTOResponse getShift(UUID shiftId) {
         User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
 
         Shift shift = findById(shiftId);
-        if (!currentUser.getOrganizationId().equals(userService.findUserById(shift.getUserId()).getOrganizationId())) {
+        if (!currentUser.getOrganizationId().equals(shift.getUser().getOrganizationId())) {
             throw new BadRequestException("Shift with id: " + shiftId + " belongs to user from another organization!");
         }
-
         return shiftMapper.entityToDto(shift);
     }
 

@@ -25,7 +25,7 @@
             <column name="s_last_modification_date" type="timestamp">
                 <constraints nullable="false"/>
             </column>
-            <column name="s_last_modification_id" type="uuid">
+            <column name="s_last_modification_user_id" type="uuid">
                 <constraints nullable="false"/>
             </column>
             <column name="s_user_id" type="uuid">

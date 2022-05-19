@@ -38,9 +38,13 @@ public class Shift {
     @Column(name = "s_last_modification_date")
     private LocalDateTime lastModificationDate;
 
-    @Column(name = "s_last_modification_user")
+    @Column(name = "s_last_modification_user_id")
     private UUID lastModificationUser;
 
     @Column(name = "s_user_id")
     private UUID userId;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "s_user_id", referencedColumnName = "u_id", insertable = false, updatable = false)
+    private User user;
 }
