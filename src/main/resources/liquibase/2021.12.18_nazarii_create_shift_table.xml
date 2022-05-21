@@ -28,6 +28,9 @@
             <column name="s_last_modification_user_id" type="uuid">
                 <constraints nullable="false"/>
             </column>
+            <column name="s_organization_id" type="uuid">
+                <constraints nullable="true"/>
+            </column>
             <column name="s_user_id" type="uuid">
                 <constraints nullable="false"/>
             </column>
@@ -38,5 +41,4 @@
         <addForeignKeyConstraint baseTableName="shift" baseColumnNames="s_user_id" constraintName="fk_shift_s_user_id" referencedTableName="users"
                                  referencedColumnNames="u_id" validate="true"/>
     </changeSet>
-
 </databaseChangeLog>

@@ -41,6 +41,9 @@ public class Shift {
     @Column(name = "s_last_modification_user_id")
     private UUID lastModificationUser;
 
+    @Column(name = "s_organization_id")
+    private UUID organizationId;
+
     @Column(name = "s_user_id")
     private UUID userId;
 

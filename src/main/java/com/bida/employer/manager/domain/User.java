@@ -60,4 +60,8 @@ public class User {
     @Column(name = "u_user_role")
     @Type(type = "pgsql_enum")
     private UserRole userRole;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "u_organization_id", referencedColumnName = "o_id", insertable = false, updatable = false)
+    private Organization organization;
 }

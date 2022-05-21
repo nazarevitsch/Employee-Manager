@@ -7,6 +7,7 @@ import com.bida.employer.manager.domain.dto.CreateShiftDTO;
 import com.bida.employer.manager.domain.dto.ShiftDTOResponse;
 import com.bida.employer.manager.domain.dto.ShiftTimeDTO;
 import com.bida.employer.manager.domain.dto.UpdateShiftDTO;
+import com.bida.employer.manager.domain.enums.NotAssignedShiftRule;
 import com.bida.employer.manager.exception.BadRequestException;
 import com.bida.employer.manager.exception.NotFoundException;
 import com.bida.employer.manager.mapper.ShiftMapper;
@@ -17,7 +18,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -37,34 +37,35 @@ public class ShiftService {
 
     public void create(CreateShiftDTO createShiftDTO) {
         User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
-
         List<Shift> shifts = new LinkedList<>();
 
-        for (UUID userId : createShiftDTO.getUserIds()) {
-            User user = userService.findUserById(userId);
-            if (!user.getOrganizationId().equals(currentUser.getOrganizationId())) {
-                throw new BadRequestException("User with id: " + user.getId() + " is from another organization!");
+        if (createShiftDTO.getUserIds() == null || createShiftDTO.getShifts().length == 0) {
+            if (currentUser.getOrganization().getRule().getNotAssignedShiftRule().equals(NotAssignedShiftRule.PROHIBITED)) {
+                throw new BadRequestException("You can't create unassigned shifts!");
             }
-
-            List<Shift> handledShifts = new LinkedList<>();
-            for (ShiftTimeDTO shiftTimeDTO : createShiftDTO.getShifts()) {
-                if (shiftTimeDTO.getShiftStart().isAfter(shiftTimeDTO.getShiftFinish())) {
-                    throw new BadRequestException("Start of the shift after finish of the shift.");
+            shifts.addAll(createShifts(currentUser.getId(), currentUser.getOrganizationId(), createShiftDTO));
+        } else {
+            for (UUID userId : createShiftDTO.getUserIds()) {
+                User user = userService.findUserById(userId);
+                if (!user.getOrganizationId().equals(currentUser.getOrganizationId())) {
+                    throw new BadRequestException("User with id: " + user.getId() + " is from another organization!");
                 }
-                Shift shift = new Shift();
-                shift.setTitle(createShiftDTO.getTitle());
-                shift.setDescription(createShiftDTO.getDescription());
-                shift.setLastModificationUser(currentUser.getOrganizationId());
-                shift.setLastModificationDate(LocalDateTime.now());
-                shift.setShiftStart(shiftTimeDTO.getShiftStart());
-                shift.setShiftFinish(shiftTimeDTO.getShiftFinish());
-                handledShifts.add(shift);
+                shifts.addAll(createShifts(currentUser.getId(), currentUser.getOrganizationId(), createShiftDTO));
             }
-
-            shifts.addAll(handledShifts);
         }
-
         shiftRepository.saveAll(shifts);
+    }
+
+    private List<Shift> createShifts(UUID currentUserId, UUID organizationId, CreateShiftDTO createShiftDTO) {
+        List<Shift> handledShifts = new LinkedList<>();
+
+        for (ShiftTimeDTO shiftTimeDTO : createShiftDTO.getShifts()) {
+            if (shiftTimeDTO.getShiftStart().isAfter(shiftTimeDTO.getShiftFinish())) {
+                throw new BadRequestException("Start of the shift after finish of the shift.");
+            }
+            handledShifts.add(shiftMapper.dtoToEntity(currentUserId, organizationId, createShiftDTO, shiftTimeDTO));
+        }
+        return handledShifts;
     }
 
     public ShiftDTOResponse update(UpdateShiftDTO updateShiftDTO) {
