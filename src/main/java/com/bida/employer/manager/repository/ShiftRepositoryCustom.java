@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,14 +19,17 @@ public class ShiftRepositoryCustom {
     @Autowired
     private EntityManager entityManager;
 
-    public List<Shift> findByFilters(UUID userId, UUID organizationId, LocalDateTime from, LocalDateTime to) {
+    public List<Shift> findByFilters(UUID userId, UUID organizationId, boolean unassignedShift, LocalDateTime from, LocalDateTime to) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Shift> criteriaQuery = criteriaBuilder.createQuery(Shift.class);
         Root<Shift> shiftRoot = criteriaQuery.from(Shift.class);
 
         List<Predicate> predicates = new LinkedList<>();
 
-        if (userId != null) {
+        if (unassignedShift) {
+            Predicate predicateUserId = criteriaBuilder.equal(shiftRoot.get("userId"), null);
+            predicates.add(predicateUserId);
+        } else if (userId != null) {
             Predicate predicateUserId = criteriaBuilder.equal(shiftRoot.get("userId"), userId);
             predicates.add(predicateUserId);
         }

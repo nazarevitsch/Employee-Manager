@@ -30,10 +30,10 @@ public class ShiftController {
 
     @GetMapping
     public ResponseEntity<List<ShiftDTOResponse>> getShifts(@RequestParam(value = "userId", required = false) UUID userId,
+                                                            @RequestParam(value = "unassigned", required = false) boolean unassignedShift,
                                                             @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-                                                            @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
-                                                            @RequestParam("unassigned") Boolean unassigned) {
-        return new ResponseEntity<>(shiftService.getShifts(userId, from, to), HttpStatus.OK);
+                                                            @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        return new ResponseEntity<>(shiftService.getShifts(userId, unassignedShift, from, to), HttpStatus.OK);
     }
 
     @PostMapping
