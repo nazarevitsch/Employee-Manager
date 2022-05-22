@@ -17,6 +17,7 @@ public class OrganizationCreateDTO {
     private OrganizationSize organizationSize;
 
     @NotNull(message = "User can't be null!")
+    @Valid
     private UserRegistrationDTO user;
 
     @NotNull(message = "Rule can't be empty!")
