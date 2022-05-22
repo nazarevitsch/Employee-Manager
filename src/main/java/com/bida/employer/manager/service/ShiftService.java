@@ -84,10 +84,10 @@ public class ShiftService {
         return shiftMapper.entityToDto(shiftRepository.save(newShift));
     }
 
-    public List<ShiftDTOResponse> getShifts(UUID userId, boolean unassignedShift, LocalDate from, LocalDate to) {
+    public List<ShiftDTOResponse> getShifts(UUID userId, boolean unassignedShifts, LocalDate from, LocalDate to) {
         User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
 
-        List<Shift> shifts = shiftRepositoryCustom.findByFilters(userId, currentUser.getOrganizationId(), unassignedShift,
+        List<Shift> shifts = shiftRepositoryCustom.findByFilters(userId, currentUser.getOrganizationId(), unassignedShifts,
                 from.atStartOfDay(), to.atStartOfDay());
 
         return shiftMapper.entityToDto(shifts);

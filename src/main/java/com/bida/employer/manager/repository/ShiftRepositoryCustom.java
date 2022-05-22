@@ -19,14 +19,14 @@ public class ShiftRepositoryCustom {
     @Autowired
     private EntityManager entityManager;
 
-    public List<Shift> findByFilters(UUID userId, UUID organizationId, boolean unassignedShift, LocalDateTime from, LocalDateTime to) {
+    public List<Shift> findByFilters(UUID userId, UUID organizationId, boolean unassignedShifts, LocalDateTime from, LocalDateTime to) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Shift> criteriaQuery = criteriaBuilder.createQuery(Shift.class);
         Root<Shift> shiftRoot = criteriaQuery.from(Shift.class);
 
         List<Predicate> predicates = new LinkedList<>();
 
-        if (unassignedShift) {
+        if (unassignedShifts) {
             Predicate predicateUserId = criteriaBuilder.equal(shiftRoot.get("userId"), null);
             predicates.add(predicateUserId);
         } else if (userId != null) {
