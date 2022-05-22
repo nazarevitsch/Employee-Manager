@@ -24,7 +24,7 @@ public class ShiftMapper {
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
     }
 
-    public Shift dtoToEntity(UUID currentUserId, UUID organizationId, CreateShiftDTO createShiftDTO, ShiftTimeDTO shiftTimeDTO) {
+    public Shift dtoToEntity(UUID currentUserId, UUID organizationId, UUID userId, CreateShiftDTO createShiftDTO, ShiftTimeDTO shiftTimeDTO) {
         Shift shift = new Shift();
         shift.setTitle(createShiftDTO.getTitle());
         shift.setDescription(createShiftDTO.getDescription());
@@ -33,7 +33,7 @@ public class ShiftMapper {
         shift.setShiftStart(shiftTimeDTO.getShiftStart());
         shift.setShiftFinish(shiftTimeDTO.getShiftFinish());
         shift.setOrganizationId(organizationId);
-
+        shift.setUserId(userId);
         return shift;
     }
 

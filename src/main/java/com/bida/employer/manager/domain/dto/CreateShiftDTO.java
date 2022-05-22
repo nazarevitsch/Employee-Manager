@@ -9,7 +9,6 @@ import java.util.UUID;
 @Data
 public class CreateShiftDTO {
 
-    @NotNull
     private UUID[] userIds;
 
     @NotNull

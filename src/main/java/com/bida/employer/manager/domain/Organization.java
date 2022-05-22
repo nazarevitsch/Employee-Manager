@@ -45,8 +45,4 @@ public class Organization {
     @Column(name = "o_organization_size")
     @Type(type = "pgsql_enum")
     private OrganizationSize organizationSize;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "o_id", referencedColumnName = "r_organization_id", insertable = false, updatable = false)
-    private Rule rule;
 }

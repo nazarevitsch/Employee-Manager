@@ -1,8 +1,6 @@
 package com.bida.employer.manager.service;
 
-import com.bida.employer.manager.domain.MyUserDetails;
-import com.bida.employer.manager.domain.Shift;
-import com.bida.employer.manager.domain.User;
+import com.bida.employer.manager.domain.*;
 import com.bida.employer.manager.domain.dto.CreateShiftDTO;
 import com.bida.employer.manager.domain.dto.ShiftDTOResponse;
 import com.bida.employer.manager.domain.dto.ShiftTimeDTO;
@@ -33,6 +31,8 @@ public class ShiftService {
     private UserService userService;
     @Autowired
     private ShiftMapper shiftMapper;
+    @Autowired
+    private RuleService ruleService;
 
 
     public void create(CreateShiftDTO createShiftDTO) {
@@ -40,30 +40,31 @@ public class ShiftService {
         List<Shift> shifts = new LinkedList<>();
 
         if (createShiftDTO.getUserIds() == null || createShiftDTO.getShifts().length == 0) {
-            if (currentUser.getOrganization().getRule().getNotAssignedShiftRule().equals(NotAssignedShiftRule.PROHIBITED)) {
+            Rule rule = ruleService.findRuleByOrganizationId(currentUser.getOrganizationId());
+            if (rule.getNotAssignedShiftRule().equals(NotAssignedShiftRule.PROHIBITED)) {
                 throw new BadRequestException("You can't create unassigned shifts!");
             }
-            shifts.addAll(createShifts(currentUser.getId(), currentUser.getOrganizationId(), createShiftDTO));
+            shifts.addAll(createShifts(currentUser.getId(), currentUser.getOrganizationId(), null, createShiftDTO));
         } else {
             for (UUID userId : createShiftDTO.getUserIds()) {
                 User user = userService.findUserById(userId);
                 if (!user.getOrganizationId().equals(currentUser.getOrganizationId())) {
                     throw new BadRequestException("User with id: " + user.getId() + " is from another organization!");
                 }
-                shifts.addAll(createShifts(currentUser.getId(), currentUser.getOrganizationId(), createShiftDTO));
+                shifts.addAll(createShifts(currentUser.getId(), currentUser.getOrganizationId(), userId, createShiftDTO));
             }
         }
         shiftRepository.saveAll(shifts);
     }
 
-    private List<Shift> createShifts(UUID currentUserId, UUID organizationId, CreateShiftDTO createShiftDTO) {
+    private List<Shift> createShifts(UUID currentUserId, UUID organizationId, UUID userId, CreateShiftDTO createShiftDTO) {
         List<Shift> handledShifts = new LinkedList<>();
 
         for (ShiftTimeDTO shiftTimeDTO : createShiftDTO.getShifts()) {
             if (shiftTimeDTO.getShiftStart().isAfter(shiftTimeDTO.getShiftFinish())) {
-                throw new BadRequestException("Start of the shift after finish of the shift.");
+                throw new BadRequestException("Start of the shift after finish of the shift!");
             }
-            handledShifts.add(shiftMapper.dtoToEntity(currentUserId, organizationId, createShiftDTO, shiftTimeDTO));
+            handledShifts.add(shiftMapper.dtoToEntity(currentUserId, organizationId, userId, createShiftDTO, shiftTimeDTO));
         }
         return handledShifts;
     }
