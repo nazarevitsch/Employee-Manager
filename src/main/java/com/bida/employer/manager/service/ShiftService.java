@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class ShiftService {
@@ -35,7 +36,7 @@ public class ShiftService {
     private RuleService ruleService;
 
 
-    public void create(CreateShiftDTO createShiftDTO) {
+    public List<UUID> create(CreateShiftDTO createShiftDTO) {
         User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
         List<Shift> shifts = new LinkedList<>();
 
@@ -54,7 +55,8 @@ public class ShiftService {
                 shifts.addAll(createShifts(currentUser.getId(), currentUser.getOrganizationId(), userId, createShiftDTO));
             }
         }
-        shiftRepository.saveAll(shifts);
+        List<Shift> savedShifts = shiftRepository.saveAll(shifts);
+        return savedShifts.stream().map(Shift::getId).collect(Collectors.toList());
     }
 
     private List<Shift> createShifts(UUID currentUserId, UUID organizationId, UUID userId, CreateShiftDTO createShiftDTO) {

@@ -13,6 +13,9 @@ public class UpdateShiftDTO {
     private UUID shiftId;
 
     @NotNull
+    private UUID userId;
+
+    @NotNull
     private String title;
 
     @NotNull

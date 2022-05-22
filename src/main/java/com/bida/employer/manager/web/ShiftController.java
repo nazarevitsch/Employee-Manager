@@ -38,9 +38,8 @@ public class ShiftController {
 
     @PostMapping
     @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
-    public ResponseEntity<?> create(@RequestBody @Valid CreateShiftDTO createShiftDTO) {
-        shiftService.create(createShiftDTO);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<List<UUID>> create(@RequestBody @Valid CreateShiftDTO createShiftDTO) {
+        return new ResponseEntity<>(shiftService.create(createShiftDTO), HttpStatus.CREATED);
     }
 
     @PutMapping
