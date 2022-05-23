@@ -16,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -74,16 +75,32 @@ public class ShiftService {
     public ShiftDTOResponse update(UpdateShiftDTO updateShiftDTO) {
         User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
 
-        Shift existedShift = findById(updateShiftDTO.getShiftId());
-        User user = userService.findUserById(existedShift.getUserId());
-
-        if (!user.getOrganizationId().equals(currentUser.getOrganizationId())) {
-            throw new BadRequestException("Shift with id: " + updateShiftDTO.getShiftId() + " belongs to user from another organization!");
+        if (updateShiftDTO.getShiftStart().isAfter(updateShiftDTO.getShiftFinish())) {
+            throw new BadRequestException("Start of the shift after finish of the shift!");
         }
-        Shift newShift = shiftMapper.dtoToEntity(updateShiftDTO);
-        newShift.setLastModificationUser(currentUser.getId());
-        newShift.setUserId(user.getId());
-        return shiftMapper.entityToDto(shiftRepository.save(newShift));
+        Shift existedShift = findById(updateShiftDTO.getShiftId());
+
+        User user = null;
+        if (updateShiftDTO.getUserId() == null) {
+            Rule rule = ruleService.findRuleByOrganizationId(currentUser.getOrganizationId());
+            if (rule.getNotAssignedShiftRule().equals(NotAssignedShiftRule.PROHIBITED)) {
+                throw new BadRequestException("You can't update shift to unassigned!");
+            }
+        } else {
+            user = userService.findUserById(updateShiftDTO.getUserId());
+            if (!user.getOrganizationId().equals(currentUser.getOrganizationId())) {
+                throw new BadRequestException("Shift with id: " + updateShiftDTO.getShiftId() + " belongs to user from another organization!");
+            }
+        }
+
+        existedShift.setLastModificationDate(LocalDateTime.now());
+        existedShift.setUserId(updateShiftDTO.getUserId());
+        existedShift.setTitle(updateShiftDTO.getTitle());
+        existedShift.setDescription(updateShiftDTO.getDescription());
+        existedShift.setShiftStart(updateShiftDTO.getShiftStart());
+        existedShift.setShiftFinish(updateShiftDTO.getShiftFinish());
+
+        return shiftMapper.entityToDto(shiftRepository.save(existedShift));
     }
 
     public List<ShiftDTOResponse> getShifts(UUID userId, boolean unassignedShifts, LocalDate from, LocalDate to) {
