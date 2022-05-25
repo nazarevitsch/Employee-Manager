@@ -124,7 +124,17 @@ public class ShiftService {
 
     public void delete(List<UUID> shiftIds) {
         User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
-        shiftRepository.deleteShiftsByIdsAndOrganizationId(currentUser.getOrganizationId(), shiftIds);
+
+        List<Shift> shifts = shiftRepository.findAllById(shiftIds);
+        for (Shift shift : shifts) {
+            if (shift.getShiftStart().isBefore(LocalDateTime.now())) {
+                throw new BadRequestException("You can't remove old shift!");
+            }
+            if (!shift.getOrganizationId().equals(currentUser.getOrganizationId())) {
+                throw new BadRequestException("You can't remove shift of users from another organization!");
+            }
+        }
+        shiftRepository.deleteAllById(shiftIds);
     }
 
     public Shift findById(UUID shiftId) {

@@ -17,7 +17,7 @@
             <column name="t_description" type="text">
                 <constraints nullable="false"/>
             </column>
-            <column name="u_task_time" type="timestamp">
+            <column name="t_task_time" type="timestamp">
                 <constraints nullable="false"/>
             </column>
             <column name="t_shift_id" type="uuid">
