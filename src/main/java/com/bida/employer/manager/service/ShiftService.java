@@ -64,6 +64,9 @@ public class ShiftService {
         List<Shift> handledShifts = new LinkedList<>();
 
         for (ShiftTimeDTO shiftTimeDTO : createShiftDTO.getShifts()) {
+            if (shiftTimeDTO.getShiftStart().isBefore(LocalDateTime.now())) {
+                throw new BadRequestException("Shift can't start before now!");
+            }
             if (shiftTimeDTO.getShiftStart().isAfter(shiftTimeDTO.getShiftFinish())) {
                 throw new BadRequestException("Start of the shift after finish of the shift!");
             }
@@ -75,6 +78,9 @@ public class ShiftService {
     public ShiftDTOResponse update(UpdateShiftDTO updateShiftDTO) {
         User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
 
+        if (updateShiftDTO.getShiftStart().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Shift can't start before now!");
+        }
         if (updateShiftDTO.getShiftStart().isAfter(updateShiftDTO.getShiftFinish())) {
             throw new BadRequestException("Start of the shift after finish of the shift!");
         }
