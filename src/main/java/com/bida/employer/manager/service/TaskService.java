@@ -48,11 +48,11 @@ public class TaskService {
         if (!shift.getOrganizationId().equals(currentUser.getOrganizationId())) {
             throw new BadRequestException("Shift with id: " + shift.getId() + " is from another organization!");
         }
-        if (taskDTO.getTaskTime() != null && taskDTO.getTaskTime().isBefore(LocalDateTime.now())) {
-            throw new BadRequestException("You can't set time for task before now!");
-        }
         if (shift.getShiftStart().isBefore(LocalDateTime.now())) {
             throw new BadRequestException("You can't set time to old shift!");
+        }
+        if (taskDTO.getTaskTime() != null && (taskDTO.getTaskTime().isBefore(shift.getShiftStart()) || taskDTO.getTaskTime().isAfter(shift.getShiftFinish()))) {
+            throw new BadRequestException("You can't set time for task before now!");
         }
         Task createdTask = taskRepository.save(taskMapper.dtoToEntity(taskDTO));
         return taskMapper.entityToDto(createdTask);
@@ -69,11 +69,12 @@ public class TaskService {
         if (!task.getShiftId().equals(taskUpdateDTO.getShiftId())) {
             throw new BadRequestException("You can't update shift for task!");
         }
-        if (taskUpdateDTO.getTaskTime() != null && taskUpdateDTO.getTaskTime().isBefore(LocalDateTime.now())) {
-            throw new BadRequestException("You can't set time for task before now!");
-        }
         if (existedShift.getShiftStart().isBefore(LocalDateTime.now())) {
             throw new BadRequestException("You can't set time to old shift!");
+        }
+        if (taskUpdateDTO.getTaskTime() != null && (taskUpdateDTO.getTaskTime().isBefore(existedShift.getShiftStart())
+                || taskUpdateDTO.getTaskTime().isAfter(existedShift.getShiftFinish()))) {
+            throw new BadRequestException("You can't set time for task before now!");
         }
         Task createdTask = taskRepository.save(taskMapper.dtoToEntity(taskUpdateDTO));
         return taskMapper.entityToDto(createdTask);
