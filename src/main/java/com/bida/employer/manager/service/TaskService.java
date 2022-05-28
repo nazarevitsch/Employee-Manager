@@ -16,7 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -28,6 +28,18 @@ public class TaskService {
     private TaskRepository taskRepository;
     @Autowired
     private ShiftService shiftService;
+
+    public List<TaskDTOResponse> getTasksByShiftId(UUID shiftId) {
+        User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+
+        Shift shift = shiftService.findById(shiftId);
+        if (!shift.getOrganizationId().equals(currentUser.getOrganizationId())) {
+            throw new BadRequestException("Shift with id: " + shift.getId() + " is from another organization!");
+        }
+
+        List<Task> tasks = taskRepository.findAllByShiftId(shiftId);
+        return taskMapper.entityToDto(tasks);
+    }
 
     public TaskDTOResponse createTask(TaskDTO taskDTO) {
         User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
