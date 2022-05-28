@@ -3,6 +3,7 @@ package com.bida.employer.manager.mapper;
 import com.bida.employer.manager.domain.Task;
 import com.bida.employer.manager.domain.dto.TaskDTO;
 import com.bida.employer.manager.domain.dto.TaskDTOResponse;
+import com.bida.employer.manager.domain.dto.TaskUpdateDTO;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,11 @@ public class TaskMapper {
     public Task dtoToEntity(TaskDTO taskDTO) {
         return modelMapper.map(taskDTO, Task.class);
     }
+
+    public Task dtoToEntity(TaskUpdateDTO taskDTO) {
+        return modelMapper.map(taskDTO, Task.class);
+    }
+
 
     public TaskDTOResponse entityToDto(Task task) {
         return modelMapper.map(task, TaskDTOResponse.class);
