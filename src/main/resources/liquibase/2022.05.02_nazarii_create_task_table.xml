@@ -18,7 +18,6 @@
                 <constraints nullable="false"/>
             </column>
             <column name="t_task_time" type="timestamp">
-                <constraints nullable="false"/>
             </column>
             <column name="t_shift_id" type="uuid">
                 <constraints nullable="false"/>

@@ -33,5 +33,5 @@ public class Task {
     private LocalDateTime taskTime;
 
     @Column(name = "t_shift_id")
-    private UUID shift_id;
+    private UUID shiftId;
 }
