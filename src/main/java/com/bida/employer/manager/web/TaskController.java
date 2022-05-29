@@ -23,13 +23,13 @@ public class TaskController {
 
     @PostMapping
     @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
-    public ResponseEntity<TaskDTOResponse> createTask(@Valid TaskDTO taskDTO) {
+    public ResponseEntity<TaskDTOResponse> createTask(@RequestBody @Valid TaskDTO taskDTO) {
         return new ResponseEntity<>(taskService.createTask(taskDTO), HttpStatus.CREATED);
     }
 
     @PutMapping
     @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
-    public ResponseEntity<TaskDTOResponse> updateTask(@Valid TaskUpdateDTO taskDTO) {
+    public ResponseEntity<TaskDTOResponse> updateTask(@RequestBody @Valid TaskUpdateDTO taskDTO) {
         return new ResponseEntity<>(taskService.updateTask(taskDTO), HttpStatus.OK);
     }
 
