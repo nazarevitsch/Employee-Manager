@@ -57,8 +57,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/user/password_recovery")
                 .permitAll()
                 .antMatchers(HttpMethod.GET,
-                        "user/refresh_token",
+                        "/user/refresh_token",
                         "/user/password_recovery")
+                .permitAll()
+                .antMatchers(HttpMethod.GET, "/v3/api-docs")
                 .permitAll()
 
                 .anyRequest().authenticated()
