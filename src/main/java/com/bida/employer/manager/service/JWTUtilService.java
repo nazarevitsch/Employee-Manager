@@ -78,7 +78,12 @@ public class JWTUtilService {
     public String generateAccessToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         User user = ((MyUserDetails)userDetails).getUser();
-        claims.put("Role", user.getUserRole());
+        claims.put("userId", user.getId());
+        claims.put("organizationId", user.getOrganizationId());
+        claims.put("role", user.getUserRole());
+        claims.put("email", user.getEmail());
+        claims.put("firstName", user.getFirstName());
+        claims.put("lastName", user.getLastName());
 
         return Jwts.builder().setClaims(claims).setId(user.getId().toString()).setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + ACCESS_AVAILABLE_TIME))
