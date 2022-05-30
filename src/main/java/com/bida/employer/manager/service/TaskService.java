@@ -49,7 +49,7 @@ public class TaskService {
             throw new BadRequestException("Shift with id: " + shift.getId() + " is from another organization!");
         }
         if (shift.getShiftStart().isBefore(LocalDateTime.now())) {
-            throw new BadRequestException("You can't set time to old shift!");
+            throw new BadRequestException("You can't set time to old task!");
         }
         if (taskDTO.getTaskTime() != null && (taskDTO.getTaskTime().isBefore(shift.getShiftStart())
                 || taskDTO.getTaskTime().isAfter(shift.getShiftFinish()))) {
@@ -71,7 +71,7 @@ public class TaskService {
             throw new BadRequestException("You can't update shift for task!");
         }
         if (existedShift.getShiftStart().isBefore(LocalDateTime.now())) {
-            throw new BadRequestException("You can't set time to old shift!");
+            throw new BadRequestException("You can't set time to old task!");
         }
         if (taskUpdateDTO.getTaskTime() != null && (taskUpdateDTO.getTaskTime().isBefore(existedShift.getShiftStart())
                 || taskUpdateDTO.getTaskTime().isAfter(existedShift.getShiftFinish()))) {
@@ -79,6 +79,20 @@ public class TaskService {
         }
         Task createdTask = taskRepository.save(taskMapper.dtoToEntity(taskUpdateDTO));
         return taskMapper.entityToDto(createdTask);
+    }
+
+    public void deleteTask(UUID taskId) {
+        User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+
+        Task task = findById(taskId);
+        Shift existedShift = shiftService.findById(task.getShiftId());
+        if (!existedShift.getOrganizationId().equals(currentUser.getOrganizationId())) {
+            throw new BadRequestException("Task with id: " + taskId + " is from another organization!");
+        }
+        if (existedShift.getShiftStart().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("You can't delete old task!");
+        }
+        taskRepository.deleteById(taskId);
     }
 
     public Task findById(UUID taskId) {

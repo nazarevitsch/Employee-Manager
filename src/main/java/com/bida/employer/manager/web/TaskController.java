@@ -11,7 +11,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,5 +36,12 @@ public class TaskController {
     @GetMapping("/{shiftId}")
     public ResponseEntity<List<TaskDTOResponse>> getTaskByShiftId(@PathVariable("shiftId") UUID shiftId) {
         return new ResponseEntity<>(taskService.getTasksByShiftId(shiftId), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{taskId}")
+    @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
+    public ResponseEntity<?> deleteTask(@PathVariable("taskId") UUID taskId) {
+        taskService.deleteTask(taskId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
