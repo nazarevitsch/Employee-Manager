@@ -10,7 +10,7 @@ import java.util.UUID;
 @Data
 public class TaskUpdateDTO {
 
-    @NotEmpty(message = "Id can't be null!")
+    @NotNull(message = "Id can't be null!")
     private UUID id;
 
     @NotEmpty(message = "Title can't be empty!")

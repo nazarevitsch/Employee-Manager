@@ -75,7 +75,7 @@ public class TaskService {
         }
         if (taskUpdateDTO.getTaskTime() != null && (taskUpdateDTO.getTaskTime().isBefore(existedShift.getShiftStart())
                 || taskUpdateDTO.getTaskTime().isAfter(existedShift.getShiftFinish()))) {
-            throw new BadRequestException("You can't set time for task before now!");
+            throw new BadRequestException("You can't set time outside of the task!");
         }
         Task createdTask = taskRepository.save(taskMapper.dtoToEntity(taskUpdateDTO));
         return taskMapper.entityToDto(createdTask);
