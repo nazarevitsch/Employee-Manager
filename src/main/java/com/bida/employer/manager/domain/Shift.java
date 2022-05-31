@@ -6,6 +6,7 @@ import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -50,4 +51,7 @@ public class Shift {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "s_user_id", referencedColumnName = "u_id", insertable = false, updatable = false)
     private User user;
+
+    @OneToMany(mappedBy = "shift", fetch = FetchType.LAZY)
+    private List<Task> tasks;
 }

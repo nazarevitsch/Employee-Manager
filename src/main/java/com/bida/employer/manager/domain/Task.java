@@ -34,4 +34,8 @@ public class Task {
 
     @Column(name = "t_shift_id")
     private UUID shiftId;
+
+    @ManyToOne
+    @JoinColumn(name = "t_shift_id", nullable = false, insertable = false, updatable = false)
+    private Shift shift;
 }
