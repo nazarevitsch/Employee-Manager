@@ -1,5 +1,6 @@
 package com.bida.employer.manager.web;
 
+import com.bida.employer.manager.domain.dto.CheckInOutDTO;
 import com.bida.employer.manager.domain.dto.CreateShiftDTO;
 import com.bida.employer.manager.domain.dto.ShiftDTOResponse;
 import com.bida.employer.manager.domain.dto.UpdateShiftDTO;
@@ -22,6 +23,12 @@ public class ShiftController {
 
     @Autowired
     private ShiftService shiftService;
+
+    @PostMapping("checkInOut")
+    public ResponseEntity<?> checkInOut(@RequestBody CheckInOutDTO checkInOutDTO){
+        shiftService.checkInOut(checkInOutDTO);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 
     @GetMapping("/{shiftId}")
     public ResponseEntity<ShiftDTOResponse> getShift(@PathVariable("shiftId") UUID shiftId) {

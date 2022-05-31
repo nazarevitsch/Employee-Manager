@@ -10,4 +10,5 @@
     <include file="2021.12.18_nazarii_create_shift_table.xml" relativeToChangelogFile="true"/>
     <include file="2022.01.21_nazarii_create_password_recovery_table.xml" relativeToChangelogFile="true"/>
     <include file="2022.05.02_nazarii_create_task_table.xml" relativeToChangelogFile="true"/>
+    <include file="2022.05.31_nazarii_create_check_in_out_table.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

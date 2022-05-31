@@ -1,14 +1,14 @@
 package com.bida.employer.manager.service;
 
 import com.bida.employer.manager.domain.*;
-import com.bida.employer.manager.domain.dto.CreateShiftDTO;
-import com.bida.employer.manager.domain.dto.ShiftDTOResponse;
-import com.bida.employer.manager.domain.dto.ShiftTimeDTO;
-import com.bida.employer.manager.domain.dto.UpdateShiftDTO;
+import com.bida.employer.manager.domain.dto.*;
+import com.bida.employer.manager.domain.enums.CheckInOutEnum;
 import com.bida.employer.manager.domain.enums.NotAssignedShiftRule;
 import com.bida.employer.manager.exception.BadRequestException;
 import com.bida.employer.manager.exception.NotFoundException;
+import com.bida.employer.manager.mapper.CheckInOutMapper;
 import com.bida.employer.manager.mapper.ShiftMapper;
+import com.bida.employer.manager.repository.CheckInOutRepository;
 import com.bida.employer.manager.repository.ShiftRepository;
 import com.bida.employer.manager.repository.ShiftRepositoryCustom;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,13 +28,57 @@ public class ShiftService {
     @Autowired
     private ShiftRepository shiftRepository;
     @Autowired
+    private CheckInOutRepository checkInOutRepository;
+    @Autowired
     private ShiftRepositoryCustom shiftRepositoryCustom;
     @Autowired
     private UserService userService;
     @Autowired
     private ShiftMapper shiftMapper;
     @Autowired
+    private CheckInOutMapper checkInOutMapper;
+    @Autowired
     private RuleService ruleService;
+
+    public void checkInOut(CheckInOutDTO checkInOutDTO) {
+        User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        CheckInOut checkInOut = checkInOutMapper.dtoToEntity(checkInOutDTO);
+        Shift shift = findById(checkInOut.getShiftId());
+        if (!shift.getOrganizationId().equals(currentUser.getOrganizationId())) {
+            throw new BadRequestException("You can't check in/out shift of user from another organization!");
+        }
+
+        List<CheckInOut> checkInOuts = checkInOutRepository.findAllByShiftId(checkInOut.getShiftId());
+        CheckInOut checkIn = findCheckIn(checkInOuts, CheckInOutEnum.CHECK_IN);
+        CheckInOut checkOut = findCheckIn(checkInOuts, CheckInOutEnum.CHECK_OUT);
+
+        if (checkIn != null && checkOut != null) {
+            throw new BadRequestException("Shift with id: " + shift.getId() + " is finished!");
+        }
+        if (checkIn != null && checkInOut.getCheckInOut().equals(CheckInOutEnum.CHECK_IN)) {
+            throw new BadRequestException("Shift with id: " + shift.getId() + " was already checked in!");
+        }
+        if (checkIn == null && checkInOut.getCheckInOut().equals(CheckInOutEnum.CHECK_OUT)) {
+            throw new BadRequestException("Shift with id: " + shift.getId() + " wasn't checked in!");
+        }
+        if (checkInOut.getCheckInOut().equals(CheckInOutEnum.CHECK_IN) && shift.getShiftStart().minusMinutes(30).isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Too early!");
+        }
+        if (checkOut != null && checkInOut.getCheckInOut().equals(CheckInOutEnum.CHECK_OUT)) {
+            throw new BadRequestException("Shift with id: " + shift.getId() + " was already checked out!");
+        }
+        if (checkInOut.getCheckInOut().equals(CheckInOutEnum.CHECK_OUT) && shift.getShiftFinish().minusMinutes(30).isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Too early!");
+        }
+        checkInOutRepository.save(checkInOut);
+    }
+
+    private CheckInOut findCheckIn(List<CheckInOut> checkInOuts, CheckInOutEnum checkInOutEnum) {
+        for (CheckInOut checkInOut : checkInOuts) {
+            if (checkInOut.getCheckInOut().equals(checkInOutEnum)) return checkInOut;
+        }
+        return null;
+    }
 
 
     public List<UUID> create(CreateShiftDTO createShiftDTO) {
