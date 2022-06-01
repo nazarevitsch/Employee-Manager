@@ -178,19 +178,21 @@ public class ShiftService {
         }
         Shift existedShift = findById(updateShiftDTO.getShiftId());
 
-        User user = null;
+        UUID previousUser = existedShift.getUserId();
+        User newUser = null;
         if (updateShiftDTO.getUserId() == null) {
             Rule rule = ruleService.findRuleByOrganizationId(currentUser.getOrganizationId());
             if (rule.getNotAssignedShiftRule().equals(NotAssignedShiftRule.PROHIBITED)) {
                 throw new BadRequestException("You can't update shift to unassigned!");
             }
         } else {
-            user = userService.findUserById(updateShiftDTO.getUserId());
-            if (!user.getOrganizationId().equals(currentUser.getOrganizationId())) {
+            newUser = userService.findUserById(updateShiftDTO.getUserId());
+            if (!newUser.getOrganizationId().equals(currentUser.getOrganizationId())) {
                 throw new BadRequestException("Shift with id: " + updateShiftDTO.getShiftId() + " belongs to user from another organization!");
             }
         }
 
+        existedShift.setLastModificationUser(currentUser.getId());
         existedShift.setLastModificationDate(LocalDateTime.now());
         existedShift.setUserId(updateShiftDTO.getUserId());
         existedShift.setTitle(updateShiftDTO.getTitle());
@@ -198,7 +200,12 @@ public class ShiftService {
         existedShift.setShiftStart(updateShiftDTO.getShiftStart());
         existedShift.setShiftFinish(updateShiftDTO.getShiftFinish());
 
-        return shiftMapper.entityToDto(shiftRepository.save(existedShift));
+        Shift savedShift = shiftRepository.save(existedShift);
+        if (previousUser == null && newUser != null) {
+            applyUnassignedShiftRepository.deleteApplyingByShiftId(savedShift.getId());
+        }
+
+        return shiftMapper.entityToDto(savedShift);
     }
 
     public List<ShiftDTOResponse> getShifts(UUID userId, boolean unassignedShifts, LocalDate from, LocalDate to) {
