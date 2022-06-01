@@ -1,8 +1,9 @@
-package com.bida.employer.manager.domain;
+package com.bida.employer.manager.domain.dto;
 
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -17,5 +18,5 @@ public class ShiftWithAppliesDTOResponse {
     private UUID lastModificationUser;
     private UUID userId;
 
-//    private ;
+    private List<UserDTOResponse> appliedUsers;
 }

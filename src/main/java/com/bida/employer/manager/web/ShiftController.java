@@ -1,6 +1,6 @@
 package com.bida.employer.manager.web;
 
-import com.bida.employer.manager.domain.ShiftWithAppliesDTOResponse;
+import com.bida.employer.manager.domain.dto.ShiftWithAppliesDTOResponse;
 import com.bida.employer.manager.domain.dto.CheckInOutDTO;
 import com.bida.employer.manager.domain.dto.CreateShiftDTO;
 import com.bida.employer.manager.domain.dto.ShiftDTOResponse;
@@ -54,6 +54,7 @@ public class ShiftController {
         return new ResponseEntity<>(shiftService.getShift(shiftId), HttpStatus.OK);
     }
 
+//    TODO: Rework unassigned shifts
     @GetMapping
     public ResponseEntity<List<ShiftDTOResponse>> getShifts(@RequestParam(value = "userId", required = false) UUID userId,
                                                             @RequestParam(value = "unassigned", required = false) boolean unassignedShifts,

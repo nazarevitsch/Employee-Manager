@@ -46,7 +46,8 @@ public class ShiftService {
     public List<ShiftWithAppliesDTOResponse> getUnassignedShiftsWithAppliedUsers() {
         User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
 
-        return null;
+        List<Shift> shifts = shiftRepository.findAllUnassignedShiftByOrganizationId(currentUser.getOrganizationId());
+        return shiftMapper.entityToShiftWithAppliesDTO(shifts);
     }
 
     public void applyUnassignedShift(UUID shiftId){
@@ -66,7 +67,7 @@ public class ShiftService {
         Rule rule = ruleService.findRuleByOrganizationId(currentUser.getOrganizationId());
 
         if (applies.size() >= rule.getMaxEmployeeShiftApplication()) {
-            throw new BadRequestException("You reached max by applying unassigned shifts: " + rule.getMaxEmployeeShiftApplication() + "!");
+            throw new BadRequestException("You reached max by applying unassigned shifts!");
         }
 
         List<ApplyUnassignedShift> filteredApplies = applies.stream().filter(el -> el.getShiftId() == shiftId).collect(Collectors.toList());

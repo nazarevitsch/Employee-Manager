@@ -1,10 +1,7 @@
 package com.bida.employer.manager.mapper;
 
 import com.bida.employer.manager.domain.Shift;
-import com.bida.employer.manager.domain.dto.CreateShiftDTO;
-import com.bida.employer.manager.domain.dto.ShiftDTOResponse;
-import com.bida.employer.manager.domain.dto.ShiftTimeDTO;
-import com.bida.employer.manager.domain.dto.UpdateShiftDTO;
+import com.bida.employer.manager.domain.dto.*;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Component;
@@ -22,6 +19,14 @@ public class ShiftMapper {
     public ShiftMapper() {
         modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+    }
+
+    public List<ShiftWithAppliesDTOResponse> entityToShiftWithAppliesDTO(List<Shift> shifts) {
+        return shifts.stream().map(this::entityToShiftWithAppliesDTO).collect(Collectors.toList());
+    }
+
+    public ShiftWithAppliesDTOResponse entityToShiftWithAppliesDTO(Shift shift) {
+        return modelMapper.map(shift, ShiftWithAppliesDTOResponse.class);
     }
 
     public Shift dtoToEntity(UUID currentUserId, UUID organizationId, UUID userId, CreateShiftDTO createShiftDTO, ShiftTimeDTO shiftTimeDTO) {

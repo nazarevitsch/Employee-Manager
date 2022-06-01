@@ -54,4 +54,11 @@ public class Shift {
 
     @OneToMany(mappedBy = "shift", fetch = FetchType.LAZY)
     private List<Task> tasks;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "apply_unassigned_shift",
+            joinColumns = @JoinColumn(name = "aus_shift_id"),
+            inverseJoinColumns = @JoinColumn(name = "aus_user_id"))
+    private List<User> appliedUsers;
 }
