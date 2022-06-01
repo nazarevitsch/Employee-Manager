@@ -25,13 +25,13 @@ public class ShiftController {
     private ShiftService shiftService;
 
     @PostMapping("checkInOut")
-    public ResponseEntity<?> checkInOut(@RequestBody CheckInOutDTO checkInOutDTO){
+    public ResponseEntity<?> checkInOut(@RequestBody @Valid CheckInOutDTO checkInOutDTO){
         shiftService.checkInOut(checkInOutDTO);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("/{shiftId}")
-    public ResponseEntity<ShiftDTOResponse> getShift(@PathVariable("shiftId") UUID shiftId) {
+    public ResponseEntity<ShiftDTOResponse> getShift(@PathVariable ("shiftId") UUID shiftId) {
         return new ResponseEntity<>(shiftService.getShift(shiftId), HttpStatus.OK);
     }
 

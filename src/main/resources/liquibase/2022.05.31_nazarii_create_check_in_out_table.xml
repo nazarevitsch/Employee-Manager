@@ -6,14 +6,14 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd"
 >
 
-    <changeSet id="create_enum_type_check_in_out" author="nazarii">
+    <changeSet id="create_enum_type_check_in_out_enum" author="nazarii">
         <sql>
-            drop type if exists check_in_out cascade;
-            create type check_in_out as enum('CHECK_IN', 'CHECK_OUT');
+            drop type if exists check_in_out_enum cascade;
+            create type check_in_out_enum as enum('CHECK_IN', 'CHECK_OUT');
         </sql>
     </changeSet>
 
-    <changeSet id="check-in-out-table" author="nazarii">
+    <changeSet id="create-check-in-out-table" author="nazarii">
         <createTable tableName="check_in_out">
             <column defaultValueComputed="uuid_generate_v4()" name="cio_id" type="uuid">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="pk_check_in_out"/>
@@ -24,7 +24,7 @@
             <column name="cio_note" type="varchar(255)">
                 <constraints nullable="true"/>
             </column>
-            <column name="u_check_in_out" type="check_in_out">
+            <column name="u_check_in_out" type="check_in_out_enum">
                 <constraints nullable="false"/>
             </column>
             <column name="cio_shift_id" type="uuid">
