@@ -14,11 +14,10 @@ import java.util.UUID;
 
 @Data
 @Entity
-@Table(name = "users")
+@Table(name = "apply_unassigned_shift")
 @TypeDef(
         name = "pgsql_enum",
         typeClass = PostgreSQLEnumType.class)
-@SQLDelete(sql = "update users set u_is_deleted=true WHERE u_id=?")
 public class ApplyUnassignedShift {
 
     @Id

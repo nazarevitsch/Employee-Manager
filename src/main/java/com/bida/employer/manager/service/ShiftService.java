@@ -56,7 +56,7 @@ public class ShiftService {
         if (!shift.getOrganizationId().equals(currentUser.getOrganizationId())) {
             throw new BadRequestException("You can't apply unassigned shift of user from another organization!");
         }
-        if (!shift.getShiftStart().isBefore(LocalDateTime.now())) {
+        if (shift.getShiftStart().isBefore(LocalDateTime.now())) {
             throw new BadRequestException("You can't apply old unassigned shift!");
         }
         if (shift.getUserId() != null) {
