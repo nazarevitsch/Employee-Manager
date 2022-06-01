@@ -8,6 +8,7 @@ import com.bida.employer.manager.exception.BadRequestException;
 import com.bida.employer.manager.exception.NotFoundException;
 import com.bida.employer.manager.mapper.CheckInOutMapper;
 import com.bida.employer.manager.mapper.ShiftMapper;
+import com.bida.employer.manager.repository.ApplyUnassignedShiftRepository;
 import com.bida.employer.manager.repository.CheckInOutRepository;
 import com.bida.employer.manager.repository.ShiftRepository;
 import com.bida.employer.manager.repository.ShiftRepositoryCustom;
@@ -32,6 +33,8 @@ public class ShiftService {
     @Autowired
     private ShiftRepositoryCustom shiftRepositoryCustom;
     @Autowired
+    private ApplyUnassignedShiftRepository applyUnassignedShiftRepository;
+    @Autowired
     private UserService userService;
     @Autowired
     private ShiftMapper shiftMapper;
@@ -39,6 +42,26 @@ public class ShiftService {
     private CheckInOutMapper checkInOutMapper;
     @Autowired
     private RuleService ruleService;
+
+    public void applyUnassignedShift(UUID shiftId){
+        User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+
+        Shift shift = findById(shiftId);
+        if (!shift.getOrganizationId().equals(currentUser.getOrganizationId())) {
+            throw new BadRequestException("You can't apply unassigned shift of user from another organization!");
+        }
+        if (!shift.getShiftStart().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("You can't apply old unassigned shift!");
+        }
+        if (shift.getUserId() != null) {
+            throw new BadRequestException("You can't apply assigned shift!");
+        }
+
+        ApplyUnassignedShift applyUnassignedShift = new ApplyUnassignedShift();
+        applyUnassignedShift.setUserId(currentUser.getId());
+        applyUnassignedShift.setShiftId(shift.getId());
+        applyUnassignedShiftRepository.save(applyUnassignedShift);
+    }
 
     public void checkInOut(CheckInOutDTO checkInOutDTO) {
         User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
