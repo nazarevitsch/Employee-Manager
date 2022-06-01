@@ -9,4 +9,6 @@ import java.util.UUID;
 public interface ApplyUnassignedShiftRepository extends JpaRepository<ApplyUnassignedShift, UUID> {
 
     List<ApplyUnassignedShift> findAllByUserId(UUID userId);
+
+    void deleteAllByShiftIdAndUserId(UUID shiftId, UUID userId);
 }

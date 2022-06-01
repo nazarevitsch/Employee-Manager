@@ -1,5 +1,6 @@
 package com.bida.employer.manager.web;
 
+import com.bida.employer.manager.domain.ShiftWithAppliesDTOResponse;
 import com.bida.employer.manager.domain.dto.CheckInOutDTO;
 import com.bida.employer.manager.domain.dto.CreateShiftDTO;
 import com.bida.employer.manager.domain.dto.ShiftDTOResponse;
@@ -28,6 +29,18 @@ public class ShiftController {
     public ResponseEntity<?> applyUnassignedShift(@PathVariable("shiftId") UUID shiftId) {
         shiftService.applyUnassignedShift(shiftId);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{shiftId}/unassigned")
+    public ResponseEntity<?> deleteApplyingUnassignedShift(@PathVariable("shiftId") UUID shiftId) {
+        shiftService.deleteApplyingUnassignedShift(shiftId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping("/unassigned")
+    @PreAuthorize("hasAnyAuthority('OWNER', 'ADMINISTRATOR')")
+    public ResponseEntity<List<ShiftWithAppliesDTOResponse>> getApplyingUnassignedShiftS() {
+        return new ResponseEntity<>(shiftService.getUnassignedShiftsWithAppliedUsers(), HttpStatus.OK);
     }
 
     @PostMapping("checkInOut")

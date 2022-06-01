@@ -43,6 +43,12 @@ public class ShiftService {
     @Autowired
     private RuleService ruleService;
 
+    public List<ShiftWithAppliesDTOResponse> getUnassignedShiftsWithAppliedUsers() {
+        User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+
+        return null;
+    }
+
     public void applyUnassignedShift(UUID shiftId){
         User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
 
@@ -67,11 +73,19 @@ public class ShiftService {
         if (filteredApplies.size() > 0) {
             throw new BadRequestException("You can't apply unassigned shift twice or more times!");
         }
-
         ApplyUnassignedShift applyUnassignedShift = new ApplyUnassignedShift();
         applyUnassignedShift.setUserId(currentUser.getId());
         applyUnassignedShift.setShiftId(shift.getId());
         applyUnassignedShiftRepository.save(applyUnassignedShift);
+    }
+
+    public void deleteApplyingUnassignedShift(UUID shiftId) {
+        User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        Shift shift = findById(shiftId);
+        if (!shift.getOrganizationId().equals(currentUser.getOrganizationId())) {
+            throw new BadRequestException("You can't apply unassigned shift of user from another organization!");
+        }
+        applyUnassignedShiftRepository.deleteAllByShiftIdAndUserId(shiftId, currentUser.getId());
     }
 
     public void checkInOut(CheckInOutDTO checkInOutDTO) {
@@ -113,7 +127,6 @@ public class ShiftService {
         }
         return null;
     }
-
 
     public List<UUID> create(CreateShiftDTO createShiftDTO) {
         User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
