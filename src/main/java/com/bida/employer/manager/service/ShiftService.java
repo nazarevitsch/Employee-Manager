@@ -65,7 +65,7 @@ public class ShiftService {
         List<ApplyUnassignedShift> applies = applyUnassignedShiftRepository.findAllByUserId(currentUser.getId());
         Rule rule = ruleService.findRuleByOrganizationId(currentUser.getOrganizationId());
 
-        if (rule.getMaxEmployeeShiftApplication() >= applies.size()) {
+        if (applies.size() >= rule.getMaxEmployeeShiftApplication()) {
             throw new BadRequestException("You reached max by applying unassigned shifts: " + rule.getMaxEmployeeShiftApplication() + "!");
         }
 
