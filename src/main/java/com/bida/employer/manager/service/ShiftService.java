@@ -56,6 +56,17 @@ public class ShiftService {
         if (shift.getUserId() != null) {
             throw new BadRequestException("You can't apply assigned shift!");
         }
+        List<ApplyUnassignedShift> applies = applyUnassignedShiftRepository.findAllByUserId(currentUser.getId());
+        Rule rule = ruleService.findRuleByOrganizationId(currentUser.getOrganizationId());
+
+        if (rule.getMaxEmployeeShiftApplication() >= applies.size()) {
+            throw new BadRequestException("You reached max by applying unassigned shifts: " + rule.getMaxEmployeeShiftApplication() + "!");
+        }
+
+        List<ApplyUnassignedShift> filteredApplies = applies.stream().filter(el -> el.getShiftId() == shiftId).collect(Collectors.toList());
+        if (filteredApplies.size() > 0) {
+            throw new BadRequestException("You can't apply unassigned shift twice or more times!");
+        }
 
         ApplyUnassignedShift applyUnassignedShift = new ApplyUnassignedShift();
         applyUnassignedShift.setUserId(currentUser.getId());
