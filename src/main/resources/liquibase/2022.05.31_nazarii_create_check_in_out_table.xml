@@ -24,7 +24,7 @@
             <column name="cio_note" type="varchar(255)">
                 <constraints nullable="true"/>
             </column>
-            <column name="u_check_in_out" type="check_in_out_enum">
+            <column name="cio_check_in_out" type="check_in_out_enum">
                 <constraints nullable="false"/>
             </column>
             <column name="cio_shift_id" type="uuid">
