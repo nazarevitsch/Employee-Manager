@@ -25,6 +25,11 @@ public class ShiftController {
     @Autowired
     private ShiftService shiftService;
 
+    @GetMapping("/next")
+    public ResponseEntity<ShiftDTOResponse> getNextShift() {
+        return new ResponseEntity<>(shiftService.getNextShift(), HttpStatus.OK);
+    }
+
     @PostMapping("/{shiftId}/unassigned")
     public ResponseEntity<?> applyUnassignedShift(@PathVariable("shiftId") UUID shiftId) {
         shiftService.applyUnassignedShift(shiftId);

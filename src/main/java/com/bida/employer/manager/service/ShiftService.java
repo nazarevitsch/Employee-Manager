@@ -43,6 +43,11 @@ public class ShiftService {
     @Autowired
     private RuleService ruleService;
 
+    public ShiftDTOResponse getNextShift() {
+        User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        return shiftMapper.entityToDto(shiftRepository.findFirstByUserIdOrderByShiftStartAsc(currentUser.getId()));
+    }
+
     public List<ShiftWithAppliesDTOResponse> getUnassignedShiftsWithAppliedUsers() {
         User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
 
