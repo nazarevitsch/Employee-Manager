@@ -18,7 +18,7 @@ public class ShiftDTOResponse {
     private LocalDateTime lastModificationDate;
     private UUID lastModificationUser;
     private UUID userId;
-    private User user;
+    private UserDTOResponse user;
 
     private List<TaskDTOResponse> tasks;
 }
