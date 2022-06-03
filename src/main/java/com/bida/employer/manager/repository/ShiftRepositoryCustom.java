@@ -43,11 +43,10 @@ public class ShiftRepositoryCustom {
         Predicate predicateTo = criteriaBuilder.lessThanOrEqualTo(shiftRoot.get("shiftStart"), to);
         predicates.add(predicateTo);
 
-        criteriaQuery.orderBy(criteriaBuilder.asc(shiftRoot.get("shiftStart")));
-
         Predicate[] predicatesFinal = new Predicate[predicates.size()];
         predicates.toArray(predicatesFinal);
         criteriaQuery.where(predicatesFinal);
+        criteriaQuery.orderBy(criteriaBuilder.asc(shiftRoot.get("shiftStart")));
 
         TypedQuery<Shift> query = entityManager.createQuery(criteriaQuery);
         return query.getResultList();

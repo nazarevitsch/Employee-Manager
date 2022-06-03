@@ -217,7 +217,7 @@ public class ShiftService {
         User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
 
         List<Shift> shifts = shiftRepositoryCustom.findByFilters(userId, currentUser.getOrganizationId(), unassignedShifts,
-                from.atStartOfDay(), to.atStartOfDay());
+                from.atStartOfDay(), to.plusDays(1).atStartOfDay());
 
         return shiftMapper.entityToDto(shifts);
     }
