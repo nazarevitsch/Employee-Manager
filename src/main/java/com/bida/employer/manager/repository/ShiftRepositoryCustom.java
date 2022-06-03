@@ -34,9 +34,8 @@ public class ShiftRepositoryCustom {
             predicates.add(predicateUserId);
         }
 
-        Join<Shift, User> joinWithUser = shiftRoot.join("user");
-        Predicate predicateLocationIsNotDeleted = criteriaBuilder.equal(joinWithUser.get("organizationId"), organizationId);
-        predicates.add(predicateLocationIsNotDeleted);
+        Predicate predicateOrganization = criteriaBuilder.equal(shiftRoot.get("organizationId"), organizationId);
+        predicates.add(predicateOrganization);
 
         Predicate predicateFrom = criteriaBuilder.greaterThanOrEqualTo(shiftRoot.get("shiftFinish"), from);
         predicates.add(predicateFrom);
