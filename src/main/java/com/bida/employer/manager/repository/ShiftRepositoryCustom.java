@@ -37,7 +37,7 @@ public class ShiftRepositoryCustom {
         Predicate predicateOrganization = criteriaBuilder.equal(shiftRoot.get("organizationId"), organizationId);
         predicates.add(predicateOrganization);
 
-        Predicate predicateFrom = criteriaBuilder.greaterThanOrEqualTo(shiftRoot.get("shiftFinish"), from);
+        Predicate predicateFrom = criteriaBuilder.greaterThanOrEqualTo(shiftRoot.get("shiftStart"), from);
         predicates.add(predicateFrom);
 
         Predicate predicateTo = criteriaBuilder.lessThanOrEqualTo(shiftRoot.get("shiftStart"), to);
@@ -49,6 +49,7 @@ public class ShiftRepositoryCustom {
         criteriaQuery.orderBy(criteriaBuilder.asc(shiftRoot.get("shiftStart")));
 
         TypedQuery<Shift> query = entityManager.createQuery(criteriaQuery);
-        return query.getResultList();
+        List<Shift> shifts = query.getResultList();
+        return shifts;
     }
 }
