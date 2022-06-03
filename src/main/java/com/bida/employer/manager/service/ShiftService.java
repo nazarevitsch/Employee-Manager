@@ -138,7 +138,7 @@ public class ShiftService {
         User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
         List<Shift> shifts = new LinkedList<>();
 
-        if (createShiftDTO.getUserIds() == null || createShiftDTO.getShifts().length == 0) {
+        if (createShiftDTO.getUserIds() == null || createShiftDTO.getUserIds().length == 0) {
             Rule rule = ruleService.findRuleByOrganizationId(currentUser.getOrganizationId());
             if (rule.getNotAssignedShiftRule().equals(NotAssignedShiftRule.PROHIBITED)) {
                 throw new BadRequestException("You can't create unassigned shifts!");
