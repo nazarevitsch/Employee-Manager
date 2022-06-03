@@ -27,7 +27,7 @@ public class ShiftRepositoryCustom {
         List<Predicate> predicates = new LinkedList<>();
 
         if (unassignedShifts) {
-            Predicate predicateUserId = criteriaBuilder.equal(shiftRoot.get("userId"), null);
+            Predicate predicateUserId = criteriaBuilder.isNull(shiftRoot.get("userId"));
             predicates.add(predicateUserId);
         } else if (userId != null) {
             Predicate predicateUserId = criteriaBuilder.equal(shiftRoot.get("userId"), userId);
