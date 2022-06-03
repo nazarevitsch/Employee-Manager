@@ -3,6 +3,7 @@ package com.bida.employer.manager.domain;
 import com.bida.employer.manager.domain.enums.CheckInOutEnum;
 import com.bida.employer.manager.domain.enums.PostgreSQLEnumType;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -30,6 +31,7 @@ public class CheckInOut {
     )
     private UUID id;
 
+    @CreationTimestamp
     @Column(name = "cio_check_time")
     private LocalDateTime checkTime;
 
