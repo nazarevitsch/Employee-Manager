@@ -16,7 +16,6 @@ public class ShiftWithAppliesDTOResponse {
     private LocalDateTime shiftFinish;
     private LocalDateTime lastModificationDate;
     private UUID lastModificationUser;
-    private UUID userId;
 
     private List<UserDTOResponse> appliedUsers;
 }
