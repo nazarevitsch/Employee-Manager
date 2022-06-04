@@ -39,7 +39,7 @@ public class CheckInOut {
     private String note;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "u_check_in_out")
+    @Column(name = "cio_check_in_out")
     @Type(type = "pgsql_enum")
     private CheckInOutEnum checkInOut;
 
