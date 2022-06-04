@@ -1,5 +1,6 @@
 package com.bida.employer.manager.mapper;
 
+import com.bida.employer.manager.domain.CheckInOut;
 import com.bida.employer.manager.domain.Shift;
 import com.bida.employer.manager.domain.dto.*;
 import org.modelmapper.ModelMapper;
@@ -7,6 +8,7 @@ import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;

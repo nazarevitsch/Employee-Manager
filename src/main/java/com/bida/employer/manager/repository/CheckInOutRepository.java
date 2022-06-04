@@ -11,4 +11,6 @@ import java.util.UUID;
 public interface CheckInOutRepository extends JpaRepository<CheckInOut, UUID> {
 
     List<CheckInOut> findAllByShiftId(UUID shiftId);
+
+    List<CheckInOut> findAllByShiftId(List<UUID> shiftIds);
 }

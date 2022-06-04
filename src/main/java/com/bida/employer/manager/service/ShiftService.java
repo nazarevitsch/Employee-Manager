@@ -4,6 +4,7 @@ import com.bida.employer.manager.domain.*;
 import com.bida.employer.manager.domain.dto.*;
 import com.bida.employer.manager.domain.enums.CheckInOutEnum;
 import com.bida.employer.manager.domain.enums.NotAssignedShiftRule;
+import com.bida.employer.manager.domain.enums.UserRole;
 import com.bida.employer.manager.exception.BadRequestException;
 import com.bida.employer.manager.exception.NotFoundException;
 import com.bida.employer.manager.mapper.CheckInOutMapper;
@@ -213,13 +214,26 @@ public class ShiftService {
         return shiftMapper.entityToDto(savedShift);
     }
 
-    public List<ShiftDTOResponse> getShifts(UUID userId, boolean unassignedShifts, LocalDate from, LocalDate to) {
+    public List<ShiftDTOResponse> getShifts(UUID userId, boolean unassignedShifts, boolean checkInOut, LocalDate from, LocalDate to) {
         User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
 
         List<Shift> shifts = shiftRepositoryCustom.findByFilters(userId, currentUser.getOrganizationId(), unassignedShifts,
                 from.atStartOfDay(), to.plusDays(1).atStartOfDay());
-
-        return shiftMapper.entityToDto(shifts);
+        List<ShiftDTOResponse> shiftSDto = shiftMapper.entityToDto(shifts);
+        if (checkInOut && (currentUser.getUserRole().equals(UserRole.ADMINISTRATOR) || currentUser.getUserRole().equals(UserRole.OWNER))) {
+            List<UUID> ids = shifts.stream().map(Shift::getId).collect(Collectors.toList());
+            List<CheckInOutDTOResponse> checkInOuts = checkInOutMapper.entityToDto(checkInOutRepository.findAllByShiftId(ids));
+            for (int i = 0; i < shiftSDto.size(); i++) {
+                List<CheckInOutDTOResponse> list = new LinkedList<>();
+                for (int l = 0; l < checkInOuts.size(); l++) {
+                    if (shiftSDto.get(i).getId().equals(checkInOuts.get(l).getShiftId())) {
+                        list.add(checkInOuts.get(l));
+                    }
+                }
+                shiftSDto.get(i).setChecks(list);
+            }
+        }
+        return shiftSDto;
     }
 
     public ShiftDTOResponse getShift(UUID shiftId) {

@@ -1,6 +1,5 @@
 package com.bida.employer.manager.domain.dto;
 
-import com.bida.employer.manager.domain.User;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -21,4 +20,5 @@ public class ShiftDTOResponse {
     private UserDTOResponse user;
 
     private List<TaskDTOResponse> tasks;
+    private List<CheckInOutDTOResponse> checks;
 }
