@@ -213,13 +213,13 @@ public class ShiftService {
         return shiftMapper.entityToDto(savedShift);
     }
 
-    public List<ShiftDTOResponse> getShifts(UUID userId, boolean unassignedShifts, boolean checkInOut, LocalDate from, LocalDate to) {
+    public List<ShiftDTOResponse> getShifts(UUID userId, boolean unassignedShifts, LocalDate from, LocalDate to) {
         User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
 
         List<Shift> shifts = shiftRepositoryCustom.findByFilters(userId, currentUser.getOrganizationId(), unassignedShifts,
                 from.atStartOfDay(), to.plusDays(1).atStartOfDay());
         List<ShiftDTOResponse> shiftSDto = shiftMapper.entityToDto(shifts);
-        if (checkInOut && (currentUser.getUserRole().equals(UserRole.ADMINISTRATOR) || currentUser.getUserRole().equals(UserRole.OWNER))) {
+        if (currentUser.getUserRole().equals(UserRole.ADMINISTRATOR) || currentUser.getUserRole().equals(UserRole.OWNER)) {
             List<UUID> ids = shifts.stream().map(Shift::getId).collect(Collectors.toList());
             List<CheckInOutDTOResponse> checkInOuts = checkInOutMapper.entityToDto(checkInOutRepository.findAllByShiftId(ids));
             for (int i = 0; i < shiftSDto.size(); i++) {
