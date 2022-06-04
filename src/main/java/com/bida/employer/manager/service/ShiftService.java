@@ -46,7 +46,10 @@ public class ShiftService {
 
     public ShiftDTOResponse getNextShift() {
         User currentUser = ((MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
-        return shiftMapper.entityToDto(shiftRepository.findFirstByUserIdOrderByShiftStartAsc(currentUser.getId()));
+        ShiftDTOResponse shift = shiftMapper.entityToDto(shiftRepository.findFirstByUserIdOrderByShiftStartAsc(currentUser.getId()));
+        List<CheckInOutDTOResponse> checks = checkInOutMapper.entityToDto(checkInOutRepository.findAllByShiftId(List.of(shift.getId())));
+        shift.setChecks(checks);
+        return shift;
     }
 
     public List<ShiftWithAppliesDTOResponse> getUnassignedShiftsWithAppliedUsers() {
