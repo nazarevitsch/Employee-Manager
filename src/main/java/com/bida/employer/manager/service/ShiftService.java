@@ -120,13 +120,13 @@ public class ShiftService {
         if (checkIn == null && checkInOut.getCheckInOut().equals(CheckInOutEnum.CHECK_OUT)) {
             throw new BadRequestException("Shift with id: " + shift.getId() + " wasn't checked in!");
         }
-        if (checkInOut.getCheckInOut().equals(CheckInOutEnum.CHECK_IN) && shift.getShiftStart().minusMinutes(30).isBefore(LocalDateTime.now())) {
+        if (checkInOut.getCheckInOut().equals(CheckInOutEnum.CHECK_IN) && LocalDateTime.now().isBefore(shift.getShiftStart().minusMinutes(30))) {
             throw new BadRequestException("Too early!");
         }
         if (checkOut != null && checkInOut.getCheckInOut().equals(CheckInOutEnum.CHECK_OUT)) {
             throw new BadRequestException("Shift with id: " + shift.getId() + " was already checked out!");
         }
-        if (checkInOut.getCheckInOut().equals(CheckInOutEnum.CHECK_OUT) && shift.getShiftFinish().minusMinutes(30).isBefore(LocalDateTime.now())) {
+        if (checkInOut.getCheckInOut().equals(CheckInOutEnum.CHECK_OUT) && LocalDateTime.now().isBefore(shift.getShiftFinish().minusMinutes(30))) {
             throw new BadRequestException("Too early!");
         }
         checkInOutRepository.save(checkInOut);
